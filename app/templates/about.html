@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>О Нас</title>
+
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/about.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
+</head>
+<body>
+
+  {% include 'header.html' %}
+
+  <!-- Главный экран -->
+  <section class="hero about-hero">
+    <div class="hero-inner">
+      <div class="hero-text scroll-animate">
+        <h1>О нас</h1>
+        <p>Dentist-AI — это инновационный проект, направленный на автоматизацию работы стоматологических клиник. Наша цель — сделать процессы диагностики и управления пациентами максимально эффективными и безопасными.</p>
+      </div>
+      <div class="hero-image scroll-animate">
+        <img src="{{ url_for('static', filename='images/about.jpg') }}" alt="About Dentist-AI">
+      </div>
+    </div>
+  </section>
+
+  <!-- Наша история -->
+  <section class="history-section scroll-animate">
+    <div class="content-container">
+      <h2>Наша история</h2>
+      <p>Компания была основана группой стоматологов и разработчиков в 2025 году. Мы увидели проблему, с которой сталкиваются клиники: множество ручных процессов, ошибки при записи пациентов и длительное время анализа рентген-снимков. С первых дней мы стремились создать инструмент, который объединит AI и удобный интерфейс для врачей.</p>
+      <p>С момента запуска первого прототипа наши алгоритмы проходили тестирование в нескольких клиниках, показывая высокую точность и сокращение времени диагностики на 60%.</p>
+    </div>
+  </section>
+
+  <!-- Наша миссия -->
+  <section class="mission-section scroll-animate" style="background: var(--bg-light);">
+    <div class="content-container">
+      <h2>Наша миссия</h2>
+      <p>Мы хотим дать стоматологам возможность сосредоточиться на пациентах, а не на бумажной работе. Наш AI помогает быстро и точно определять патологии, оптимизировать расписание и вести полную историю посещений.</p>
+      <p>Мы также стремимся к тому, чтобы технологии были доступными для клиник любого масштаба, от маленьких кабинетов до крупных стоматологических центров.</p>
+    </div>
+  </section>
+
+  <!-- Команда -->
+  <section class="team-section scroll-animate">
+    <div class="content-container">
+      <h2>Наша команда</h2>
+      <p>В нашей команде объединены эксперты в области стоматологии, искусственного интеллекта и UX/UI дизайна. Каждый член команды вносит свой вклад в развитие продукта:</p>
+      <ul>
+        <li><strong>Стоматологи:</strong> проверяют корректность диагностики и определяют ключевые функции системы.</li>
+        <li><strong>Разработчики AI:</strong> создают алгоритмы распознавания патологии на рентген-снимках.</li>
+        <li><strong>Дизайнеры:</strong> делают интерфейс удобным и понятным для врачей.</li>
+        <li><strong>Менеджмент:</strong> обеспечивает стратегическое развитие и внедрение продукта в клиниках.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Наши ценности -->
+  <section class="values-section scroll-animate" style="background: var(--bg-light);">
+    <div class="content-container">
+      <h2>Наши ценности</h2>
+      <p>Мы верим в:</p>
+      <ul>
+        <li><strong>Качество:</strong> точность и надежность каждого решения.</li>
+        <li><strong>Этика:</strong> соблюдение конфиденциальности пациентов и прозрачность алгоритмов.</li>
+        <li><strong>Инновации:</strong> постоянное совершенствование технологий для стоматологов.</li>
+        <li><strong>Доступность:</strong> продукт, который подходит как крупным клиникам, так и маленьким кабинетам.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Истории успеха -->
+  <section class="success-section scroll-animate">
+    <div class="content-container">
+      <h2>Истории успеха</h2>
+      <p>Наши клиенты отмечают значительное улучшение качества работы и сокращение ошибок:</p>
+      <div class="success-cards">
+        <div class="success-card scroll-animate">
+          <h3>Клиника «Зубок»</h3>
+          <p>Сократили время на диагностику на 50%, повысили точность определения патологий и оптимизировали расписание врачей.</p>
+        </div>
+        <div class="success-card scroll-animate">
+          <h3>Стоматологический центр «Молния»</h3>
+          <p>AI-аналитика позволила быстро интегрировать систему в существующие процессы, улучшив поток пациентов и уменьшив административные ошибки.</p>
+        </div>
+        <div class="success-card scroll-animate">
+          <h3>Клиника «Улыбка»</h3>
+          <p>Благодаря нашему AI удалось повысить удовлетворённость пациентов и сократить очереди на прием на 30%.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {% include 'footer.html' %}
+
+  <script src="{{ url_for('static', filename='js/header.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/about.js') }}"></script>
+</body>
+</html>

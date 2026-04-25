@@ -1,0 +1,67 @@
+<!-- HEADER -->
+<header class="header-header">
+  <div class="header-container">
+    <a href="{{ url_for('main') }}" class="header-logo-block">
+      <img src="{{ url_for('static', filename='images/logo_light.svg') }}" class="header-logo" />
+      <span class="header-brand">Dentist-AI</span>
+    </a>
+
+    <nav class="header-nav-links">
+      <a href="{{ url_for('about') }}" class="{% if request.path == '/about' %}active{% endif %}">О нас</a>
+      <a href="{{ url_for('contact') }}" class="{% if request.path == '/contact' %}active{% endif %}">Контакты</a>
+      <a href="{{ url_for('pricing') }}" class="{% if request.path == '/pricing' %}active{% endif %}">Цены</a>
+      <div class="header-nav-indicator"></div>
+    </nav>
+
+    <div class="header-auth-block">
+      {% if 'user_id' in session %}
+        <!-- Пользователь вошёл: иконка профиля -->
+        <a href="{{ url_for('home') }}" class="header-profile-btn">
+          <span>{{ session['user_name'] }}</span>
+          <img src="{{ url_for('static', filename='images/profile.svg') }}" class="header-profile-icon" />
+        </a>
+      {% else %}
+        <!-- Пользователь не вошёл: Войти / Зарегистрироваться -->
+        <a href="{{ url_for('login') }}" class="header-btn header-login">Войти</a>
+        <a href="{{ url_for('register') }}" class="header-btn header-register">Зарегистрироваться</a>
+      {% endif %}
+
+      <div class="header-lang-wrapper">
+        <img src="{{ url_for('static', filename='images/globe.svg') }}" class="header-lang-icon" id="header-langBtn" />
+        <div class="header-lang-dropdown" id="header-langDropdown">
+          <div>Русский</div>
+          <div>English</div>
+          <div>Қазақша</div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="header-burger" id="header-burger"></div>
+  </div>
+</header>
+
+<!-- MOBILE MENU -->
+<div class="header-mobile-menu" id="header-mobileMenu">
+  <img src="{{ url_for('static', filename='images/globe.svg') }}" class="header-mobile-lang" id="header-mobileLangBtn">
+  
+  <div class="header-mobile-lang-dropdown header-lang-dropdown" id="header-mobileLangDropdown">
+    <div>Русский</div>
+    <div>English</div>
+    <div>Қазақша</div>
+  </div>
+
+  <a href="{{ url_for('about') }}" class="header-mobile-menu-a" >О нас</a>
+  <a href="{{ url_for('contact') }}" class="header-mobile-menu-a">Контакты</a>
+  <a href="{{ url_for('pricing') }}" class="header-mobile-menu-a">Цены</a>
+  {% if 'user_id' in session %}
+    <a href="{{ url_for('home') }}" class="header-mobile-profile-btn">
+      <img src="{{ url_for('static', filename='images/profile.svg') }}" class="header-profile-icon" />
+      <span>{{ session['user_name'] }}</span>
+    </a>
+  {% else %}
+    <a href="{{ url_for('login') }}" class="header-btn header-login">Войти</a>
+    <a href="{{ url_for('register') }}" class="header-btn header-register">Зарегистрироваться</a>
+  {% endif %}
+
+</div>

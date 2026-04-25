@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Контакты</title>
+
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/contact.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
+</head>
+<body>
+
+  {% include 'header.html' %}
+
+
+
+  <!-- Hero -->
+  <section class="contact-hero scroll-animate">
+    <div class="hero-content">
+      <h1>Свяжитесь с нами</h1>
+      <p>Если у вас есть вопросы, предложения или вы хотите демо нашего продукта, оставьте сообщение — мы обязательно ответим!</p>
+    </div>
+  </section>
+
+  <!-- Контактная информация и форма -->
+  <section class="contact-section scroll-animate">
+    <div class="contact-container">
+
+      <!-- Блок контактной информации -->
+      <div class="contact-info scroll-animate">
+        <h2>Контактная информация</h2>
+        <p><strong>Адрес:</strong> г. Астана, ул. Туркестан 8</p>
+        <p><strong>Телефон:</strong> +7 (7777) 777-777</p>
+        <p><strong>Email:</strong> dentist-ai@gmail.com</p>
+        <p><strong>Часы работы:</strong> Пн–Пт 09:00–18:00</p>
+      </div>
+
+      <!-- Форма обратной связи -->
+      <div class="contact-form scroll-animate">
+        <h2>Напишите нам</h2>
+        
+        <form id="contactForm" method="POST">
+          <input type="text" name="name" placeholder="Ваше имя" required>
+          <input type="email" name="email" placeholder="Email" required>
+          <input type="text" name="subject" placeholder="Тема" required>
+          <textarea name="message" rows="6" placeholder="Сообщение" required></textarea>
+          <button type="submit">Отправить</button>
+        </form>
+
+      </div>
+
+    </div>
+
+    <!-- Карта -->
+    <div class="contact-map scroll-animate">
+      <iframe 
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1855.652623312507!2d71.42649397692324!3d51.115068304916335!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4245843d00db517b%3A0x9ab17c6110e2a469!2sDoctor%20Dent!5e1!3m2!1sen!2skz!4v1764205512503!5m2!1sen!2skz"
+        width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+      </iframe>
+    </div>
+  </section>
+
+  {% include 'footer.html' %}
+
+  <script src="{{ url_for('static', filename='js/header.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/contact.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Главная</title>
+  
+  <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/header.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
+</head>
+<body>
+
+  {% include 'header.html' %}
+
+  <!-- Главный экран -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-text scroll-animate">
+        <h1>Dentist-AI</h1>
+        <p>Нейросеть автоматически определяет патологии на рентгеновских снимках, выделяет их и показывает вероятность заболевания. Экономит время врача и снижает риск ошибок.</p>
+        <a href="{{ url_for('register') }}" class="btn try">Попробовать бесплатно</a>
+      </div>
+      <div class="hero-image scroll-animate">
+        <img src="{{ url_for('static', filename='images/main.jpg') }}" alt="AI dentistry sample">
+      </div>
+    </div>
+  </section>
+
+  <!-- Проблема и миссия -->
+  <section class="mission-problem">
+    <div class="mission-container scroll-animate">
+      <h2>Наша миссия</h2>
+      <p>Мы стремимся упростить работу стоматологических клиник, автоматизировать процессы и дать врачам больше времени для пациентов.</p>
+    </div>
+
+    <div class="problem-solution-container">
+      <div class="problem-solution-card scroll-animate">
+        <h3>Проблема</h3>
+        <p>Ручные процессы, неэффективная запись пациентов и потеря информации тормозят работу клиники.</p>
+      </div>
+      <div class="problem-solution-card scroll-animate">
+        <h3>Решение</h3>
+        <p>Dentist-AI автоматизирует управление, улучшает точность данных и повышает эффективность работы вашей клиники.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Плюсы -->
+  <section class="features-section">
+    <h2>Почему выбирают нас</h2>
+
+    <div class="features-list">
+      <div class="feature-card scroll-animate">
+        <h3>Автоматизация записи</h3>
+        <p>Онлайн-запись, уведомления, расписание и управление потоками пациентов — всё в одном удобном интерфейсе.</p>
+      </div>
+
+      <div class="feature-card scroll-animate">
+        <h3>Умное управление пациентами</h3>
+        <p>Полная история посещений, карточки пациентов, анализ снимков и автоматические напоминания встроены в систему.</p>
+      </div>
+
+      <div class="feature-card scroll-animate">
+        <h3>AI-аналитика</h3>
+        <p>Искусственный интеллект анализирует рентгеновские снимки, выявляет патологии и помогает принимать более точные клинические решения.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Отзывы -->
+  <section class="reviews-section">
+    <h2>Отзывы наших клиентов</h2>
+
+    <div class="reviews-list">
+      <div class="review-card scroll-animate">
+        <p>“Dentist-AI полностью изменил наш подход к диагностике, теперь анализ снимков занимает секунды, а точность возросла.”</p>
+        <strong>— Dr. Сагидобраев</strong>
+      </div>
+
+      <div class="review-card scroll-animate">
+        <p>“Интерфейс очень удобный. AI-аналитика помогла оптимизировать расписание и увеличить поток пациентов без дополнительной нагрузки на врачей.”</p>
+        <strong>— Dr. Арсланов</strong>
+      </div>
+    </div>
+  </section>
+
+  {% include 'footer.html' %}
+
+  <script src="{{ url_for('static', filename='js/header.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
