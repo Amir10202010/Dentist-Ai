@@ -1,8 +1,20 @@
+# Python
 __pycache__/
 *.pyc
-.env
 venv/
-.env.*
-train/
-app/.env
 app/.venv/
+
+# Environment
+.env
+.env.*
+app/.env
+
+# OS
+.DS_Store
+**/.DS_Store
+
+# Training data / runtime artifacts
+train/
+app/static/uploads/
+app/static/predicts/
+app/uploads/
