@@ -1,0 +1,116 @@
+{% extends "app/_layout.html" %}
+{% from "partials/icons.html" import icon %}
+{% set page_key = 'scan-detail' %}
+
+{% block body_data %} data-scan-id="{{ public_id }}"{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="study-heading">
+    <a class="back-link" href="#" data-scan-patient-link>
+      {{ icon('arrow-left', 'icon--sm') }}К карте пациента
+    </a>
+    <h1 data-scan-title class="skeleton skeleton--title">&nbsp;</h1>
+    <p class="study-submeta">
+      <span class="study-submeta-item">
+        {{ icon('user', 'icon--sm icon--muted') }}
+        <span data-scan-patient>—</span>
+      </span>
+      <span class="study-submeta-item">
+        {{ icon('layers', 'icon--sm icon--muted') }}
+        <span data-scan-arch>—</span>
+      </span>
+    </p>
+  </div>
+  <div class="cluster">
+    <a class="btn btn--sm" href="#" data-scan-download download>
+      {{ icon('download', 'icon--sm') }}Скачать STL
+    </a>
+    <button type="button" class="btn btn--sm btn--danger" data-delete-scan>
+      {{ icon('trash', 'icon--sm') }}Удалить
+    </button>
+  </div>
+</div>
+
+<div class="study-layout">
+  <div class="stack">
+    <div class="viewer-frame" data-scan-stage>
+      <div class="viewer-toolbar">
+        <div class="viewer-tools">
+          <button type="button" class="btn btn--sm" data-reset-view disabled>
+            {{ icon('maximize', 'icon--sm') }}Сбросить вид
+          </button>
+        </div>
+        <div class="field clip-field">
+          <label class="field-label" for="clip">
+            {{ icon('slice', 'icon--sm') }}
+            <span>Срез</span>
+          </label>
+          <input class="range" type="range" id="clip" min="5" max="100" step="1" value="100"
+                 data-clip-plane disabled>
+        </div>
+      </div>
+      <div class="mesh-stage">
+        <canvas class="mesh-canvas" data-mesh-canvas tabindex="0"
+                aria-label="Трёхмерная модель. Перетаскивание вращает, колесо масштабирует, стрелки поворачивают."></canvas>
+        <div class="mesh-loading" data-mesh-loading>
+          <span class="spinner" aria-hidden="true"></span>
+          <p>Загружаем модель…</p>
+        </div>
+      </div>
+      <p class="viewer-hint panel-subtitle">
+        Перетащите — вращение · <kbd>Shift</kbd> + перетаскивание — сдвиг · колесо — масштаб
+      </p>
+    </div>
+  </div>
+
+  <div class="stack">
+    <section class="card">
+      <h2 class="panel-title" style="margin-block-end: var(--space-3)">О модели</h2>
+      <dl class="meta-list">
+        <dt>Файл</dt>
+        <dd data-scan-filename>—</dd>
+        <dt>Исходный формат</dt>
+        <dd data-scan-format>—</dd>
+        <dt>Треугольников</dt>
+        <dd data-scan-triangles>—</dd>
+        <dt>Размер</dt>
+        <dd data-scan-size>—</dd>
+        <dt>Габариты</dt>
+        <dd data-scan-dimensions>—</dd>
+        <dt>Дата сканирования</dt>
+        <dd data-scan-captured>—</dd>
+        <dt>Загружено</dt>
+        <dd data-scan-uploaded>—</dd>
+        <dt>Кем</dt>
+        <dd data-scan-author>—</dd>
+      </dl>
+    </section>
+
+    <section class="card">
+      <h2 class="panel-title" style="margin-block-end: var(--space-3)">Заметка</h2>
+      <p class="panel-subtitle" data-scan-notes>—</p>
+    </section>
+  </div>
+</div>
+
+<dialog class="dialog" data-delete-dialog aria-labelledby="delete-scan-title">
+  <div class="dialog-header">
+    <h2 class="dialog-title" id="delete-scan-title">
+      <span class="dialog-icon dialog-icon--danger" aria-hidden="true">{{ icon('trash') }}</span>
+      Удалить 3D-модель?
+    </h2>
+  </div>
+  <div class="dialog-body">
+    <p class="panel-subtitle">
+      Модель будет удалена безвозвратно. Запись в журнале доступа сохранится.
+    </p>
+  </div>
+  <div class="dialog-footer">
+    <form method="dialog"><button class="btn" type="submit">Отмена</button></form>
+    <button type="button" class="btn btn--danger-solid" data-confirm-delete>
+      {{ icon('trash', 'icon--sm') }}Удалить
+    </button>
+  </div>
+</dialog>
+{% endblock %}

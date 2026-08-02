@@ -1,0 +1,93 @@
+{% extends "app/_layout.html" %}
+{% from "partials/icons.html" import icon %}
+{% set page_key = 'volumes' %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>КЛКТ-исследования</h1>
+    <p class="page-subtitle">
+      Объёмные снимки, автоматический разбор находок и трёхмерный просмотр.
+    </p>
+  </div>
+  <button type="button" class="btn btn--primary" data-open-upload>
+    {{ icon('upload', 'icon--sm') }}Загрузить КЛКТ
+  </button>
+</div>
+
+{# The same dropzone component the radiograph screen uses. A CBCT export is
+   dragged from a folder like any other file, and inventing a second visual
+   language for it would be a bug rather than a feature. #}
+<label class="dropzone dropzone--volume" data-dropzone tabindex="0" role="button"
+       aria-label="Перетащите файл КЛКТ или нажмите для выбора">
+  <input type="file" data-file-input
+         accept=".zip,.nii,.gz,.dcm,application/zip,application/octet-stream">
+  <span class="dropzone-icon" aria-hidden="true">{{ icon('cube', 'icon--lg') }}</span>
+  <span class="dropzone-text">
+    <span class="dropzone-title">Перетащите архив DICOM-серии, .dcm или .nii(.gz)</span>
+    <span class="dropzone-hint">
+      Серия распознаётся автоматически. Сжатые синтаксисы (JPEG, JPEG 2000)
+      не поддерживаются — экспортируйте без компрессии.
+    </span>
+    <span class="upload-meter" data-upload-progress hidden>
+      <span class="upload-meter-fill" data-progress-bar></span>
+    </span>
+    <span class="dropzone-hint" data-progress-label hidden></span>
+  </span>
+</label>
+
+<section class="card">
+  <div class="panel-head">
+    <h2 class="panel-title">Исследования <span class="count-pill" data-volume-total>0</span></h2>
+  </div>
+  <div class="volume-grid" data-volume-grid>
+    {% for _ in range(3) %}
+    <div class="skeleton skeleton--card">&nbsp;</div>
+    {% endfor %}
+  </div>
+  <p class="empty-note" data-volume-empty hidden>
+    Пока нет ни одного КЛКТ-исследования.
+  </p>
+</section>
+
+<dialog class="dialog" data-upload-dialog aria-labelledby="upload-title">
+  <form data-upload-form>
+    <div class="dialog-header">
+      <h2 class="dialog-title" id="upload-title">
+        <span class="dialog-icon" aria-hidden="true">{{ icon('upload') }}</span>Загрузка КЛКТ
+      </h2>
+    </div>
+    <div class="dialog-body stack">
+      <label class="field">
+        <span class="field-label">Пациент</span>
+        <select class="input" name="patientId" required data-patient-select>
+          <option value="">Выберите пациента…</option>
+        </select>
+      </label>
+      <label class="field">
+        <span class="field-label">Поле зрения</span>
+        <select class="input" name="fieldOfView">
+          <option value="both_jaws" selected>Обе челюсти</option>
+          <option value="full_head">Вся голова</option>
+          <option value="maxilla">Верхняя челюсть</option>
+          <option value="mandible">Нижняя челюсть</option>
+          <option value="tmj">ВНЧС</option>
+          <option value="sinus">Пазухи</option>
+          <option value="implant_site">Область имплантации</option>
+        </select>
+      </label>
+      <label class="field">
+        <span class="field-label">Дата съёмки</span>
+        <input class="input" type="date" name="capturedOn">
+      </label>
+      <p class="panel-subtitle" data-upload-filename>Файл не выбран.</p>
+    </div>
+    <div class="dialog-footer">
+      <button class="btn" type="button" data-upload-cancel>Отмена</button>
+      <button class="btn btn--primary" type="submit" data-upload-submit>
+        {{ icon('sparkles', 'icon--sm') }}Загрузить и проанализировать
+      </button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}

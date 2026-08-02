@@ -1,0 +1,15 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dentist-ai",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        ".venv/bin/uvicorn dentist_ai.main:app --reload --host 127.0.0.1 --port ${PORT:-8000}"
+      ],
+      "port": 8000,
+      "autoPort": true
+    }
+  ]
+}

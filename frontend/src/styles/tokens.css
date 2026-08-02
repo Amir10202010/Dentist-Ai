@@ -1,0 +1,304 @@
+/**
+ * Design tokens.
+ *
+ * One source of truth for colour, type, space and motion.
+ *
+ * Colour is defined in OKLCH: perceptually uniform, so a lightness step looks
+ * the same on every hue, and the dark theme is a systematic transform rather
+ * than a hand-tuned second palette.
+ */
+
+:root {
+  color-scheme: light dark;
+
+  /* -- Brand ------------------------------------------------------------ */
+  --brand-h: 218;
+  --brand-c: 0.14;
+
+  --brand-50: oklch(97% 0.02 var(--brand-h));
+  --brand-100: oklch(94% 0.04 var(--brand-h));
+  --brand-200: oklch(88% 0.07 var(--brand-h));
+  --brand-300: oklch(80% 0.1 var(--brand-h));
+  --brand-400: oklch(70% 0.13 var(--brand-h));
+  --brand-500: oklch(62% var(--brand-c) var(--brand-h));
+  --brand-600: oklch(54% var(--brand-c) var(--brand-h));
+  /*
+   * The light theme's `--accent`. `--brand-600` measures 4.3:1 against the
+   * light background, which fails AA for every body link on the site and for
+   * small accent text like the step ordinals. Four points of lightness buys
+   * 5.0:1 and also lifts white-on-accent buttons from 4.54:1 to 5.3:1, at no
+   * perceptible cost to the hue.
+   */
+  --brand-650: oklch(50% var(--brand-c) var(--brand-h));
+  --brand-700: oklch(46% 0.12 var(--brand-h));
+  --brand-800: oklch(38% 0.09 var(--brand-h));
+  --brand-900: oklch(28% 0.06 var(--brand-h));
+
+  /* -- Neutrals --------------------------------------------------------- */
+  --gray-0: oklch(100% 0 0);
+  --gray-25: oklch(99% 0.002 250);
+  --gray-50: oklch(98% 0.003 250);
+  --gray-100: oklch(96% 0.004 250);
+  --gray-200: oklch(92% 0.006 250);
+  --gray-300: oklch(87% 0.008 250);
+  --gray-400: oklch(72% 0.01 250);
+  --gray-500: oklch(60% 0.012 250);
+  /* Exists solely as the light-theme `--text-subtle`. `--gray-500` measures
+     3.2–3.9:1 against the light surfaces, which fails WCAG AA for the 12–13px
+     text it is used on (breadcrumbs, chart ticks, table meta, `dt` labels).
+     This step clears 4.5:1 on all of them while still reading a clear stop
+     below `--text-muted`. The dark theme keeps `--gray-500`, where it already
+     measures 4.8:1. */
+  --gray-550: oklch(55% 0.012 250);
+  --gray-600: oklch(50% 0.012 250);
+  --gray-700: oklch(40% 0.011 250);
+  --gray-800: oklch(28% 0.009 250);
+  --gray-850: oklch(23% 0.008 250);
+  --gray-900: oklch(18% 0.007 250);
+  --gray-950: oklch(13% 0.006 250);
+
+  /* -- Finding severity -------------------------------------------------
+     Chosen to stay distinguishable under protanopia and deuteranopia: the
+     scale varies in lightness as well as hue, so it never relies on red
+     versus green alone. Overlays additionally differ in stroke style. */
+  --severity-critical: oklch(58% 0.21 25);
+  --severity-high: oklch(68% 0.17 45);
+  --severity-medium: oklch(76% 0.14 85);
+  --severity-low: oklch(70% 0.11 200);
+  --severity-info: oklch(66% 0.06 250);
+
+  --category-pathology: var(--severity-critical);
+  --category-restoration: oklch(66% 0.13 265);
+  --category-orthodontic: oklch(66% 0.14 310);
+  --category-anatomy: oklch(62% 0.05 230);
+  --category-condition: oklch(70% 0.12 130);
+
+  --success: oklch(62% 0.15 150);
+  --warning: oklch(75% 0.15 80);
+  --danger: oklch(58% 0.21 25);
+
+  /*
+   * Ink for text sitting on a faint tint of its own colour (severity badges).
+   *
+   * The severity ramp above is tuned for 2px overlay strokes on a near-black
+   * radiograph, where 58–76% lightness reads well. As *text* on a 14% tint of
+   * itself over a light surface, the same values measure ~3.8:1 and miss AA.
+   * On the light theme the badge therefore mixes the hue toward black; on the
+   * dark theme the ramp is already bright against a dark tint, so the mix is
+   * a no-op (100% leaves the second colour contributing nothing).
+   */
+  --tint-ink: black;
+  /*
+   * 62%, driven by the lightest hue in the ramp rather than the average. The
+   * severity scale spans 58% lightness (critical red) to 76% (medium yellow);
+   * at a 76% mix the yellow badge still measured 4.36:1 while the red was
+   * comfortably past AA. One ratio has to satisfy the worst case, and
+   * over-darkening a red badge costs nothing legible.
+   */
+  --tint-ink-amount: 62%;
+
+  /* -- Semantic surfaces (light) ---------------------------------------- */
+  --bg: var(--gray-50);
+  --bg-subtle: var(--gray-100);
+  --surface: var(--gray-0);
+  --surface-raised: var(--gray-0);
+  --surface-sunken: var(--gray-100);
+  --surface-hover: var(--gray-100);
+  --overlay-scrim: oklch(20% 0.01 250 / 0.45);
+
+  --border: var(--gray-200);
+  --border-strong: var(--gray-300);
+  --border-focus: var(--brand-500);
+
+  /* -- 3D viewer --------------------------------------------------------
+   * Plain hex, unlike everything else here: the WebGL renderer reads these
+   * with `getComputedStyle` and has to parse them itself, and it is not
+   * going to grow an oklch parser to do it.
+   */
+  --mesh-bg: #eaeef3;
+  /* Deliberately *not* overridden in the dark theme: the CBCT panes stay dark
+     in both, because a reslice is read against a dark field on every radiology
+     workstation and a light one destroys the low-contrast end of the window
+     the clinician is working in. */
+  --viewer-bg: #0b0e13;
+  --viewer-chrome: #141a23;
+  --mesh-base: #e4ded2;
+  --mesh-cut: #c98b7c;
+
+  --text: var(--gray-900);
+  --text-muted: var(--gray-600);
+  --text-subtle: var(--gray-550);
+  --text-on-brand: var(--gray-0);
+
+  --accent: var(--brand-650);
+  --accent-hover: var(--brand-700);
+  --accent-subtle: var(--brand-50);
+  --accent-border: var(--brand-200);
+
+  /* -- Type -------------------------------------------------------------
+     System stack: zero webfont bytes, zero layout shift, and the UI reads as
+     native on every platform. */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto,
+    'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas,
+    'Liberation Mono', monospace;
+
+  /* Fluid scale: clamp() removes the need for typography breakpoints. */
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: clamp(1.0625rem, 0.2vw + 1rem, 1.125rem);
+  --text-xl: clamp(1.25rem, 0.4vw + 1.15rem, 1.5rem);
+  --text-2xl: clamp(1.5rem, 1vw + 1.25rem, 2rem);
+  --text-3xl: clamp(1.875rem, 2vw + 1.4rem, 2.75rem);
+  --text-4xl: clamp(2.25rem, 3.5vw + 1.4rem, 3.75rem);
+
+  --leading-tight: 1.15;
+  --leading-snug: 1.35;
+  --leading-normal: 1.6;
+  --leading-relaxed: 1.75;
+
+  --tracking-tight: -0.02em;
+  --tracking-snug: -0.011em;
+  --tracking-wide: 0.04em;
+
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* -- Space (4px base) -------------------------------------------------- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+  --space-32: 8rem;
+
+  /* -- Radius ------------------------------------------------------------ */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+
+  /* -- Elevation ---------------------------------------------------------
+     Layered shadows with a hairline ring; a single large blur reads cheap. */
+  --shadow-xs: 0 1px 2px oklch(20% 0.01 250 / 0.06);
+  --shadow-sm: 0 1px 3px oklch(20% 0.01 250 / 0.08), 0 1px 2px oklch(20% 0.01 250 / 0.04);
+  --shadow-md: 0 4px 12px oklch(20% 0.01 250 / 0.08), 0 2px 4px oklch(20% 0.01 250 / 0.04);
+  --shadow-lg: 0 12px 32px oklch(20% 0.01 250 / 0.12), 0 4px 8px oklch(20% 0.01 250 / 0.06);
+  --shadow-xl: 0 24px 56px oklch(20% 0.01 250 / 0.16), 0 8px 16px oklch(20% 0.01 250 / 0.08);
+  --ring: 0 0 0 1px var(--border);
+  --ring-focus: 0 0 0 2px var(--bg), 0 0 0 4px var(--brand-500);
+
+  /* -- Motion ------------------------------------------------------------ */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+  --duration-slow: 280ms;
+
+  /* -- Layout ------------------------------------------------------------ */
+  --sidebar-width: 248px;
+  --topbar-height: 60px;
+  --container-max: 1200px;
+  --container-prose: 68ch;
+
+  --z-sticky: 100;
+  --z-drawer: 200;
+  --z-modal: 300;
+  --z-toast: 400;
+}
+
+/* ---------------------------------------------------------------------------
+   Dark theme.
+   Applied on the system preference, then overridden by an explicit
+   `data-theme` on <html> so a manual choice always wins in both directions.
+   --------------------------------------------------------------------------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: var(--gray-950);
+    --bg-subtle: var(--gray-900);
+    --surface: var(--gray-900);
+    --surface-raised: var(--gray-850);
+    --surface-sunken: var(--gray-950);
+    --surface-hover: var(--gray-850);
+    --overlay-scrim: oklch(5% 0.01 250 / 0.65);
+
+    --border: oklch(30% 0.008 250);
+    --border-strong: oklch(38% 0.01 250);
+
+    --mesh-bg: #10151c;
+    --mesh-base: #d8d2c6;
+    --mesh-cut: #b8705f;
+
+    --text: var(--gray-100);
+    --text-muted: var(--gray-400);
+    --text-subtle: var(--gray-500);
+
+    --tint-ink-amount: 100%;
+
+    --accent: var(--brand-400);
+    --accent-hover: var(--brand-300);
+    --accent-subtle: oklch(30% 0.05 var(--brand-h));
+    --accent-border: oklch(40% 0.08 var(--brand-h));
+    --text-on-brand: var(--gray-950);
+
+    --shadow-xs: 0 1px 2px oklch(0% 0 0 / 0.3);
+    --shadow-sm: 0 1px 3px oklch(0% 0 0 / 0.4), 0 1px 2px oklch(0% 0 0 / 0.3);
+    --shadow-md: 0 4px 12px oklch(0% 0 0 / 0.45), 0 2px 4px oklch(0% 0 0 / 0.3);
+    --shadow-lg: 0 12px 32px oklch(0% 0 0 / 0.5), 0 4px 8px oklch(0% 0 0 / 0.35);
+    --shadow-xl: 0 24px 56px oklch(0% 0 0 / 0.6), 0 8px 16px oklch(0% 0 0 / 0.4);
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: var(--gray-950);
+  --bg-subtle: var(--gray-900);
+  --surface: var(--gray-900);
+  --surface-raised: var(--gray-850);
+  --surface-sunken: var(--gray-950);
+  --surface-hover: var(--gray-850);
+  --overlay-scrim: oklch(5% 0.01 250 / 0.65);
+
+  --border: oklch(30% 0.008 250);
+  --border-strong: oklch(38% 0.01 250);
+
+  --mesh-bg: #10151c;
+  --mesh-base: #d8d2c6;
+  --mesh-cut: #b8705f;
+
+  --text: var(--gray-100);
+  --text-muted: var(--gray-400);
+  --text-subtle: var(--gray-500);
+
+  --accent: var(--brand-400);
+  --accent-hover: var(--brand-300);
+  --accent-subtle: oklch(30% 0.05 var(--brand-h));
+  --accent-border: oklch(40% 0.08 var(--brand-h));
+  --text-on-brand: var(--gray-950);
+
+  --shadow-xs: 0 1px 2px oklch(0% 0 0 / 0.3);
+  --shadow-sm: 0 1px 3px oklch(0% 0 0 / 0.4), 0 1px 2px oklch(0% 0 0 / 0.3);
+  --shadow-md: 0 4px 12px oklch(0% 0 0 / 0.45), 0 2px 4px oklch(0% 0 0 / 0.3);
+  --shadow-lg: 0 12px 32px oklch(0% 0 0 / 0.5), 0 4px 8px oklch(0% 0 0 / 0.35);
+  --shadow-xl: 0 24px 56px oklch(0% 0 0 / 0.6), 0 8px 16px oklch(0% 0 0 / 0.4);
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+}

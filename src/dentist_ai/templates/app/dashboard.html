@@ -1,0 +1,282 @@
+{% extends "app/_layout.html" %}
+{% from "partials/icons.html" import icon %}
+{% set page_key = 'dashboard' %}
+
+{#
+  The clinic's command centre.
+
+  Read top to bottom it answers four questions in order: where does the clinic
+  stand (the KPIs), what should I do next (the review queue and the insights
+  beside it), how are we doing (the trend and the finding mix), and what
+  changed (recent studies and the audit feed). Nothing here is decorative — a
+  widget that could not name the decision it supports was cut.
+
+  Everything renders first as a skeleton with the same geometry as the loaded
+  state, so the page never reflows once `features/dashboard.ts` fills it in.
+  The markup is the layout; the module only supplies values.
+#}
+
+{% macro skeleton_rows(widths) %}
+  {% for width in widths %}
+  <li class="skeleton-row">
+    <span class="skeleton skeleton--avatar"></span>
+    <span class="skeleton-row-text">
+      <span class="skeleton skeleton--text" style="inline-size: {{ width }}"></span>
+      <span class="skeleton skeleton--text skeleton--faint" style="inline-size: 38%"></span>
+    </span>
+  </li>
+  {% endfor %}
+{% endmacro %}
+
+{% block content %}
+<div class="dash" data-dashboard>
+
+  <header class="dash-hero">
+    <div class="dash-hero-main">
+      <p class="dash-hero-date">
+        {{ icon('calendar', 'icon--sm') }}<span>{{ today_label }}</span>
+      </p>
+      <h1 class="dash-hero-title">{{ greeting }}, {{ user.full_name.split()[0] }}</h1>
+      <p class="dash-hero-sub">{{ user.organization.name }}</p>
+    </div>
+
+    <div class="dash-hero-aside">
+      {# Live operational state. Hidden until there is something true to say —
+         a row of placeholders is worse than no row. #}
+      <div class="dash-pulse" data-pulse role="status" aria-live="polite" hidden></div>
+
+      <div class="dash-hero-actions">
+        <a class="btn btn--sm" href="/app/patients">
+          {{ icon('plus', 'icon--sm') }}<span>Пациент</span>
+        </a>
+        <a class="btn btn--sm btn--primary" href="/app/studies">
+          {{ icon('upload', 'icon--sm') }}<span>Загрузить снимок</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="state state--error" data-dashboard-error hidden>
+    <div class="state-icon" aria-hidden="true">{{ icon('alert', 'icon--lg') }}</div>
+    <p class="state-title">Не удалось загрузить сводку</p>
+    <p class="state-body">Проверьте соединение и попробуйте ещё раз — данные не были изменены.</p>
+    <button type="button" class="btn btn--sm" data-dashboard-retry>
+      {{ icon('refresh', 'icon--sm') }}Повторить
+    </button>
+  </div>
+
+  <div class="dash-grid">
+
+    <section class="dash-kpis" aria-label="Ключевые показатели">
+      <article class="kpi" data-kpi="studies">
+        <div class="kpi-head">
+          <span class="kpi-icon" aria-hidden="true">{{ icon('scan', 'icon--sm') }}</span>
+          <p class="kpi-label">Снимки за 7 дней</p>
+        </div>
+        <div class="kpi-main">
+          <p class="kpi-value" data-stat="studies-week">
+            <span class="skeleton skeleton--value"></span>
+          </p>
+          <div class="kpi-visual" data-visual="studies-spark"></div>
+        </div>
+        <p class="kpi-foot" data-foot="studies">
+          <span class="skeleton skeleton--text" style="inline-size: 60%"></span>
+        </p>
+      </article>
+
+      <article class="kpi kpi--attention" data-kpi="attention">
+        <div class="kpi-head">
+          <span class="kpi-icon" aria-hidden="true">{{ icon('stethoscope', 'icon--sm') }}</span>
+          <p class="kpi-label">Ждут решения</p>
+        </div>
+        <div class="kpi-main">
+          <p class="kpi-value" data-stat="pending">
+            <span class="skeleton skeleton--value"></span>
+          </p>
+          <div class="kpi-visual" data-visual="pending-meter"></div>
+        </div>
+        <p class="kpi-foot" data-foot="pending">
+          <span class="skeleton skeleton--text" style="inline-size: 70%"></span>
+        </p>
+      </article>
+
+      <article class="kpi kpi--reviewed" data-kpi="reviewed">
+        <div class="kpi-head">
+          <span class="kpi-icon" aria-hidden="true">{{ icon('check-circle', 'icon--sm') }}</span>
+          <p class="kpi-label">Проверено врачом</p>
+        </div>
+        <div class="kpi-main">
+          <p class="kpi-value" data-stat="reviewed-share">
+            <span class="skeleton skeleton--value"></span>
+          </p>
+          <div class="kpi-visual" data-visual="reviewed-ring"></div>
+        </div>
+        <p class="kpi-foot" data-foot="reviewed">
+          <span class="skeleton skeleton--text" style="inline-size: 55%"></span>
+        </p>
+      </article>
+
+      <article class="kpi kpi--patients" data-kpi="patients">
+        <div class="kpi-head">
+          <span class="kpi-icon" aria-hidden="true">{{ icon('users', 'icon--sm') }}</span>
+          <p class="kpi-label">Пациенты</p>
+        </div>
+        <div class="kpi-main">
+          <p class="kpi-value" data-stat="patients-total">
+            <span class="skeleton skeleton--value"></span>
+          </p>
+          <div class="kpi-visual" data-visual="patients-meter"></div>
+        </div>
+        <p class="kpi-foot" data-foot="patients">
+          <span class="skeleton skeleton--text" style="inline-size: 50%"></span>
+        </p>
+      </article>
+    </section>
+
+    {# ---------------------------------------------------------------------
+       Two independent columns, not three rows of paired cards.
+
+       A card is exactly as tall as its content, and the review queue is never
+       the same height as the insight list beside it. Laid out as rows, every
+       pair left a band of dead space under the shorter card — three of them
+       down one page. As columns, a short card is simply followed by the next.
+
+       At one column the wrappers collapse to `display: contents`, so the six
+       cards interleave back into reading order: queue, insights, trend,
+       findings, recent, activity. See `.dash-column` in app.css.
+       --------------------------------------------------------------------- #}
+    <div class="dash-column dash-column--main">
+
+      <section class="card dash-card" aria-labelledby="queue-title">
+        <div class="card-head between">
+          <div class="card-head-text">
+            <h2 class="panel-title" id="queue-title">Очередь проверки</h2>
+            <p class="panel-subtitle" data-queue-subtitle>Снимки с неразобранными патологиями</p>
+          </div>
+          <a class="btn btn--sm btn--ghost" href="/app/studies">
+            Все снимки{{ icon('chevron-right', 'icon--sm') }}
+          </a>
+        </div>
+        <ul class="queue-list" data-review-queue>
+          {{ skeleton_rows(['52%', '44%', '60%', '38%']) }}
+        </ul>
+      </section>
+
+      <section class="card dash-card" aria-labelledby="trend-title">
+        <div class="card-head between">
+          <div class="card-head-text">
+            <h2 class="panel-title" id="trend-title">Динамика загрузок</h2>
+            <p class="panel-subtitle" data-trend-total>&nbsp;</p>
+          </div>
+          {# A segmented control rather than a <select>: three options, all
+             worth showing, and one tap to move between them. #}
+          <div class="segmented" role="group" aria-label="Период">
+            <button type="button" data-range="7">7 дн.</button>
+            <button type="button" data-range="30" aria-pressed="true">30 дн.</button>
+            <button type="button" data-range="90">90 дн.</button>
+          </div>
+        </div>
+        <div class="chart-frame" data-chart="trend">
+          <div class="skeleton skeleton--chart"></div>
+        </div>
+        {# Model quality, footed under the chart it qualifies rather than given
+           a card of its own, where three numbers would read as filler. #}
+        <dl class="micro-stats">
+          <div class="micro-stat">
+            <dt>Среднее время анализа</dt>
+            <dd data-stat="avg-inference">—</dd>
+          </div>
+          <div class="micro-stat">
+            <dt>Средняя уверенность</dt>
+            <dd data-stat="avg-confidence">—</dd>
+          </div>
+          <div class="micro-stat">
+            <dt>Согласие врачей с ИИ</dt>
+            <dd data-stat="agreement">—</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="card dash-card" aria-labelledby="recent-title">
+        <div class="card-head between">
+          <div class="card-head-text">
+            <h2 class="panel-title" id="recent-title">Последние снимки</h2>
+            <p class="panel-subtitle">Что загрузили в клинику</p>
+          </div>
+          <a class="btn btn--sm btn--ghost" href="/app/studies">
+            Открыть{{ icon('chevron-right', 'icon--sm') }}
+          </a>
+        </div>
+        <ul class="recent-grid" data-recent-studies>
+          {% for _ in range(4) %}
+          <li class="recent-tile recent-tile--skeleton">
+            <span class="skeleton recent-tile-media"></span>
+            <span class="skeleton skeleton--text" style="inline-size: 70%"></span>
+            <span class="skeleton skeleton--text skeleton--faint" style="inline-size: 45%"></span>
+          </li>
+          {% endfor %}
+        </ul>
+      </section>
+
+    </div>
+
+    <div class="dash-column dash-column--side">
+
+      <section class="card dash-card" aria-labelledby="insights-title">
+        <div class="card-head between">
+          <div class="card-head-text">
+            <h2 class="panel-title" id="insights-title">
+              <span class="panel-title-icon" aria-hidden="true">{{ icon('sparkles', 'icon--sm') }}</span>
+              Что важно сейчас
+            </h2>
+            <p class="panel-subtitle">Выводы из данных вашей клиники</p>
+          </div>
+          <button type="button" class="btn btn--icon btn--ghost" data-dashboard-refresh
+                  aria-label="Обновить сводку">{{ icon('refresh', 'icon--sm') }}</button>
+        </div>
+        <ul class="insight-list" data-insights>
+          {% for width in ['70%', '58%', '64%'] %}
+          <li class="skeleton-row skeleton-row--block">
+            <span class="skeleton skeleton--text" style="inline-size: {{ width }}"></span>
+            <span class="skeleton skeleton--text skeleton--faint" style="inline-size: 40%"></span>
+          </li>
+          {% endfor %}
+        </ul>
+      </section>
+
+      <section class="card dash-card" aria-labelledby="findings-title">
+        <div class="card-head between">
+          <div class="card-head-text">
+            <h2 class="panel-title" id="findings-title">Находки</h2>
+            <p class="panel-subtitle" data-findings-subtitle>Доля от всех находок клиники</p>
+          </div>
+        </div>
+        <div class="segmented segmented--full" role="tablist" aria-label="Разрез находок">
+          <button type="button" role="tab" data-findings-tab="categories"
+                  aria-selected="true" aria-controls="findings-categories">Категории</button>
+          <button type="button" role="tab" data-findings-tab="top"
+                  aria-selected="false" aria-controls="findings-top">Топ находок</button>
+        </div>
+        <div id="findings-categories" role="tabpanel" data-chart="categories">
+          <div class="skeleton skeleton--chart skeleton--chart-sm"></div>
+        </div>
+        <ul id="findings-top" role="tabpanel" data-top-findings hidden></ul>
+      </section>
+
+      <section class="card dash-card" aria-labelledby="activity-title">
+        <div class="card-head between">
+          <div class="card-head-text">
+            <h2 class="panel-title" id="activity-title">Активность</h2>
+            <p class="panel-subtitle">Из журнала аудита</p>
+          </div>
+        </div>
+        <ol class="timeline" data-activity>
+          {{ skeleton_rows(['58%', '46%', '64%', '40%']) }}
+        </ol>
+      </section>
+
+    </div>
+
+  </div>
+</div>
+{% endblock %}

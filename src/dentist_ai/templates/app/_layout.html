@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% from "partials/icons.html" import icon %}
+
+{% set role_labels = {'owner': 'Владелец', 'dentist': 'Врач', 'assistant': 'Ассистент'} %}
+
+{#
+  Grouped rather than flat: "Клиника" and "Аккаунт" are different jobs, and a
+  four-item list with no structure reads as a placeholder. Groups also give the
+  sidebar somewhere to grow without becoming a wall of links.
+#}
+{% set nav_groups = [
+  ('Клиника', [
+    ('/app', 'Обзор', 'dashboard'),
+    ('/app/studies', 'Снимки', 'scan'),
+    ('/app/volumes', 'КЛКТ 3D', 'cube'),
+    ('/app/patients', 'Пациенты', 'users'),
+  ]),
+  ('Аккаунт', [
+    ('/app/settings', 'Настройки', 'settings'),
+  ]),
+] %}
+
+{% block assets %}
+  {{ vite_preload('src/entries/app.ts') }}
+  {{ vite_script('src/entries/app.ts') }}
+{% endblock %}
+
+{% block seo %}
+  {# Patient data must never be indexed, and referrers must not leak study ids. #}
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="same-origin">
+{% endblock %}
+
+{% block body_attrs %} class="app" data-page="{{ page_key }}"{% block body_data %}{% endblock %}{% endblock %}
+
+{% block layout %}
+<div class="app-shell">
+  <div class="sidebar-scrim" data-sidebar-scrim hidden></div>
+
+  <aside class="app-sidebar" data-sidebar data-open="false" aria-label="Навигация по разделам">
+    <a class="sidebar-brand" href="/">
+      <span class="brand-mark" aria-hidden="true">{{ icon('stethoscope') }}</span>
+      <span class="sidebar-brand-name">Dentist-AI</span>
+    </a>
+
+    <nav class="app-nav" aria-label="Основное меню">
+      {% for group_label, items in nav_groups %}
+      <div class="nav-group">
+        <p class="nav-group-label">{{ group_label }}</p>
+        {% for href, label, name in items %}
+        <a href="{{ href }}"
+           {% if current_path == href or (href != '/app' and current_path.startswith(href)) %}aria-current="page"{% endif %}>
+          {{ icon(name) }}
+          <span>{{ label }}</span>
+        </a>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="org-badge">
+        <span class="avatar" aria-hidden="true">{{ user.initials }}</span>
+        <div class="org-badge-text">
+          <div class="org-name" data-user-name>{{ user.full_name }}</div>
+          <div class="org-role">{{ role_labels[user.role.value] }} · {{ user.organization.name }}</div>
+        </div>
+      </div>
+
+      <div class="sidebar-actions">
+        {# aria-pressed would be wrong here: the control cycles light → dark →
+           system rather than toggling a binary. The current choice is carried
+           in the accessible label, which theme.ts keeps in sync. #}
+        <button type="button" class="btn btn--ghost btn--sm sidebar-action" data-theme-toggle
+                aria-label="Переключить тему">
+          <span class="theme-icon" aria-hidden="true">{{ icon('sun') }}{{ icon('moon') }}</span>
+          <span>Тема</span>
+        </button>
+        <button type="button" class="btn btn--ghost btn--sm sidebar-action" data-logout>
+          {{ icon('logout') }}<span>Выйти</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="app-main">
+    <header class="app-topbar">
+      <button type="button" class="btn btn--icon btn--ghost sidebar-toggle" data-sidebar-toggle
+              aria-expanded="false" aria-label="Открыть меню">{{ icon('menu') }}</button>
+
+      <nav class="breadcrumb" aria-label="Хлебные крошки">
+        <a href="/app">Клиника</a>
+        <span class="breadcrumb-sep" aria-hidden="true">{{ icon('chevron-right', 'icon--sm') }}</span>
+        <span class="breadcrumb-current" aria-current="page">{{ page_title }}</span>
+      </nav>
+
+      <button type="button" class="palette-trigger" data-open-palette>
+        {{ icon('search', 'icon--sm') }}
+        <span class="palette-trigger-label">Поиск и команды</span>
+        <kbd>⌘K</kbd>
+      </button>
+    </header>
+
+    <main class="app-content" id="main">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% endblock %}

@@ -1,8 +1,50 @@
+# ---- Python ----
 __pycache__/
-*.pyc
-.env
+*.py[cod]
+*.egg-info/
+.venv/
 venv/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+
+# ---- Secrets ----
+.env
 .env.*
-train/
-app/.env
-app/.venv/
+!.env.example
+
+# ---- Runtime data ----
+# Patient radiographs are PHI and must never reach version control.
+var/
+*.sqlite3
+*.sqlite3-journal
+
+# ---- Model weights ----
+# Distributed out-of-band (release artefact / object storage / Git LFS).
+# Committing them makes every clone download every past revision.
+*.pt
+*.pth
+*.onnx
+!models/.gitkeep
+
+# ---- Training artefacts ----
+training/datasets/
+training/runs/
+# Sample radiographs: potentially real patient images, and PHI does not belong
+# in version control even when de-identified.
+training/reference/samples/
+
+# ---- Frontend ----
+node_modules/
+src/dentist_ai/static/dist/
+
+# ---- OS / editor ----
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+!.vscode/extensions.json

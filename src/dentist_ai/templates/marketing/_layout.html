@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block assets %}
+  {{ vite_preload('src/entries/marketing.ts') }}
+  {{ vite_script('src/entries/marketing.ts') }}
+{% endblock %}
+
+{% block body_attrs %} class="marketing"{% endblock %}
+
+{% block layout %}
+  {% include "partials/site_header.html" %}
+  <main id="main">
+    {% block content %}{% endblock %}
+  </main>
+  {% include "partials/site_footer.html" %}
+{% endblock %}

@@ -1,0 +1,393 @@
+{% extends "marketing/_layout.html" %}
+{% from "partials/icons.html" import icon %}
+
+{# The landing page carries the product mockups, which no other page needs.
+   It therefore loads its own bundle instead of pushing that CSS onto /about
+   and /privacy. #}
+{% block assets %}
+  {{ vite_preload('src/entries/landing.ts') }}
+  {{ vite_script('src/entries/landing.ts') }}
+{% endblock %}
+
+{% block seo %}
+  {{ super() }}
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Dentist-AI",
+    "applicationCategory": "HealthApplication",
+    "operatingSystem": "Web",
+    "description": "Детекция находок на дентальных снимках, одонтограмма, 3D-сканы и план лечения."
+  }
+  </script>
+{% endblock %}
+
+{% macro finding_row(label, severity, confidence, state) %}
+<div class="lp-mock-finding" data-severity="{{ severity }}" data-state="{{ state }}">
+  <span class="lp-mock-finding-bar"></span>
+  <span class="lp-mock-finding-label">{{ label }}</span>
+  <span class="lp-mock-finding-pct">{{ confidence }}</span>
+</div>
+{% endmacro %}
+
+{% block content %}
+
+{# ───────────────────────────── Hero ───────────────────────────── #}
+<section class="lp-hero">
+  <div class="container lp-hero-inner">
+    <h1 class="lp-h1">
+      ИИ читает снимок.<br>
+      <span class="lp-h1-accent">Диагноз ставите вы.</span>
+    </h1>
+
+    <p class="lp-lead">
+      Dentist-AI отмечает находки на ортопантомограмме, раскладывает их по
+      зубам, собирает заключение и предлагает черновик плана лечения.
+      Каждое предположение видно, и каждое можно отклонить.
+    </p>
+
+    <div class="lp-cta-row">
+      <a class="btn btn--primary btn--lg lp-cta" href="/register">
+        Создать аккаунт клиники
+        {{ icon('arrow-right', 'lp-cta-arrow') }}
+      </a>
+      <a class="btn btn--lg lp-cta-ghost" href="#showcase">
+        {{ icon('scan') }}Посмотреть продукт
+      </a>
+    </div>
+  </div>
+
+  <div class="container lp-hero-stage">
+    <div class="lp-mock-frame">
+      <div class="lp-mock" role="img"
+           aria-label="Интерфейс Dentist-AI: панорамный снимок с отмеченными находками и списком результатов справа">
+        <div class="lp-mock-bar">
+          <span class="lp-mock-dots"><i></i><i></i><i></i></span>
+          <span class="lp-mock-url">
+            {{ icon('lock', 'icon--sm') }}app.dentist-ai.app/studies/A-1026
+          </span>
+        </div>
+
+        <div class="lp-mock-body">
+          <aside class="lp-mock-side">
+            <span class="lp-mock-brand"></span>
+            <span class="lp-mock-nav is-active"></span>
+            <span class="lp-mock-nav"></span>
+            <span class="lp-mock-nav"></span>
+            <span class="lp-mock-nav lp-mock-nav--short"></span>
+          </aside>
+
+          <div class="lp-mock-main">
+            <div class="lp-mock-stage">
+              <img src="/static/images/radiograph-sample.jpg" alt=""
+                   width="960" height="720" fetchpriority="high" decoding="async">
+              <span class="lp-box" data-label="Кариес · 92%"
+                    style="--x:21%; --y:37%; --w:9%; --h:13%; --c:var(--severity-high); --i:0"></span>
+              <span class="lp-box" data-label="Периапикальное · 87%"
+                    style="--x:56%; --y:45%; --w:11%; --h:16%; --c:var(--severity-critical); --i:1"></span>
+              <span class="lp-box" data-label="Пломба · 78%"
+                    style="--x:38%; --y:33%; --w:7%; --h:10%; --c:var(--severity-info); --i:2"></span>
+            </div>
+
+            <div class="lp-mock-rail">
+              <div class="lp-mock-rail-head">
+                <span></span><em>8</em>
+              </div>
+              {{ finding_row('Киста · 28', 'critical', '94%', 'confirmed') }}
+              {{ finding_row('Потеря костной ткани', 'high', '91%', 'confirmed') }}
+              {{ finding_row('Кариес · 36', 'high', '92%', 'open') }}
+              {{ finding_row('Отсутствующий зуб · 46', 'medium', '95%', 'open') }}
+              {{ finding_row('Пломба · 24', 'info', '78%', 'open') }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# ─────────────────────── Что модель находит ─────────────────────── #}
+<section class="section">
+  <div class="container">
+    <div class="lp-head" data-reveal>
+      <span class="lp-kicker">{{ icon('target', 'icon--sm') }}Находки</span>
+      <h2>31 класс находок,<br>разложенный по зубам</h2>
+      <p>
+        Модель возвращает область, класс и вероятность. Продукт превращает это
+        в номер зуба по FDI, заключение и список процедур — и показывает, из
+        чего каждый вывод собран.
+      </p>
+    </div>
+
+    <div class="lp-bento">
+      <article class="lp-cell lp-cell--lead" data-reveal>
+        <div class="lp-cell-icon">{{ icon('target', 'icon--lg') }}</div>
+        <h3>Находки с вероятностью</h3>
+        <p>
+          Каждая область подписана классом и уверенностью модели. Порог
+          фильтрации вы выбираете сами — от «показать всё» до «только то,
+          в чём модель уверена».
+        </p>
+        <div class="lp-cell-viz" aria-hidden="true">
+          {% for label, severity, pct in [('Киста', 'critical', 94), ('Кариес', 'high', 92), ('Пломба', 'info', 78), ('Абатмент', 'low', 61)] %}
+          <div class="lp-viz-row" data-severity="{{ severity }}" style="--i: {{ loop.index0 }}">
+            <span>{{ label }}</span>
+            <span class="lp-viz-track"><i style="--p: {{ pct }}%"></i></span>
+            <em>{{ pct }}%</em>
+          </div>
+          {% endfor %}
+        </div>
+      </article>
+
+      {% for name, title, body in [
+        ('tooth', 'Одонтограмма',
+         'Находка получает номер зуба по положению области на снимке. Оценка приблизительная и правится в один клик — врач решает, к какому зубу она относится.'),
+        ('cube', '3D-сканы',
+         'Интраоральные сканы и сканы моделей в STL, PLY и OBJ. Просмотр прямо в браузере, с вращением и срезом; файл пересохраняется в один формат при загрузке.'),
+        ('clipboard', 'План лечения',
+         'Черновик плана собирается из подтверждённых находок по таблице протоколов. Этапы, приоритеты и статусы ведутся в карте пациента.'),
+        ('shield', 'Данные под контролем',
+         'Снимки и модели хранятся вне публичных директорий и отдаются только сотрудникам вашей клиники. EXIF удаляется при загрузке, доступ пишется в журнал.'),
+      ] %}
+      <article class="lp-cell" data-reveal style="--reveal-index: {{ loop.index }}">
+        <div class="lp-cell-icon">{{ icon(name) }}</div>
+        <h3>{{ title }}</h3>
+        <p>{{ body }}</p>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{# ─────────────────────────── Showcase ─────────────────────────── #}
+<section class="section lp-showcase" id="showcase">
+  <div class="container">
+    <div class="lp-head lp-head--center" data-reveal>
+      <span class="lp-kicker">{{ icon('layers', 'icon--sm') }}Продукт</span>
+      <h2>Как это выглядит</h2>
+      <p>Интерфейс, а не описание интерфейса.</p>
+    </div>
+
+    <div class="lp-tabs" data-tabs data-reveal>
+      <div class="lp-tablist" role="tablist" aria-label="Экраны продукта">
+        {% for id, label, name in [
+          ('viewer', 'Просмотр снимка', 'scan'),
+          ('dash', 'Обзор клиники', 'dashboard'),
+          ('patients', 'Карты пациентов', 'users'),
+        ] %}
+        <button type="button" class="lp-tab" role="tab" id="tab-{{ id }}"
+                aria-controls="panel-{{ id }}"
+                aria-selected="{{ 'true' if loop.first else 'false' }}"
+                tabindex="{{ '0' if loop.first else '-1' }}">
+          {{ icon(name, 'icon--sm') }}<span>{{ label }}</span>
+        </button>
+        {% endfor %}
+      </div>
+
+      {# ---- Viewer panel ---- #}
+      <div class="lp-panel" role="tabpanel" id="panel-viewer" aria-labelledby="tab-viewer">
+        <div class="lp-panel-copy">
+          <h3>Каждая находка — с координатами, уверенностью и зубом</h3>
+          <p>
+            Вы фильтруете по порогу уверенности, скрываете лишние классы и
+            подтверждаете то, с чем согласны. Решение сохраняется в карте
+            пациента под вашим именем.
+          </p>
+          <ul class="lp-checklist">
+            {% for item in ['Зум и панорамирование без потери резкости', 'Фильтр по уверенности модели', 'Одонтограмма с правкой номера зуба'] %}
+            <li>{{ icon('check', 'icon--sm') }}{{ item }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div class="lp-mock-frame">
+          <div class="lp-mock" role="img" aria-label="Экран просмотра снимка с находками">
+            <div class="lp-mock-bar"><span class="lp-mock-dots"><i></i><i></i><i></i></span></div>
+            <div class="lp-mock-body">
+              <div class="lp-mock-main">
+                <div class="lp-mock-stage">
+                  <img src="/static/images/radiograph-sample.jpg" alt="" loading="lazy" decoding="async">
+                  <span class="lp-box" data-label="Кариес · 92%"
+                        style="--x:21%; --y:37%; --w:9%; --h:13%; --c:var(--severity-high); --i:0"></span>
+                  <span class="lp-box" data-label="Киста · 94%"
+                        style="--x:56%; --y:45%; --w:11%; --h:16%; --c:var(--severity-critical); --i:1"></span>
+                </div>
+                <div class="lp-mock-rail">
+                  <div class="lp-mock-rail-head"><span></span><em>8</em></div>
+                  {{ finding_row('Киста · 28', 'critical', '94%', 'confirmed') }}
+                  {{ finding_row('Кариес · 36', 'high', '92%', 'open') }}
+                  {{ finding_row('Пломба · 24', 'info', '78%', 'open') }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {# ---- Dashboard panel ---- #}
+      <div class="lp-panel" role="tabpanel" id="panel-dash" aria-labelledby="tab-dash" hidden>
+        <div class="lp-panel-copy">
+          <h3>Сводка по клинике, а не по одному снимку</h3>
+          <p>
+            Динамика загрузок, самые частые находки и доля заключений, которые
+            врач уже проверил. Всё считается по вашим данным.
+          </p>
+          <ul class="lp-checklist">
+            {% for item in ['Загрузки по дням за месяц', 'Распределение находок по категориям', 'Очередь снимков, ожидающих проверки'] %}
+            <li>{{ icon('check', 'icon--sm') }}{{ item }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div class="lp-mock-frame">
+          <div class="lp-mock" role="img" aria-label="Экран обзора клиники со статистикой">
+            <div class="lp-mock-bar"><span class="lp-mock-dots"><i></i><i></i><i></i></span></div>
+            <div class="lp-mock-body lp-mock-body--pad">
+              <div class="lp-mock-kpis">
+                {% for label, value, tone in [('Пациенты','128','a'),('Снимки','412','b'),('Требуют внимания','13','c'),('Проверено','59 %','d')] %}
+                <div class="lp-mock-kpi" data-tone="{{ tone }}">
+                  <span>{{ label }}</span>
+                  <strong>{{ value }}</strong>
+                </div>
+                {% endfor %}
+              </div>
+              <div class="lp-mock-chart">
+                {% for h in [18,32,12,44,26,58,38,72,30,64,48,86,40,70,54,92,46,78] %}
+                <i style="--h: {{ h }}%; --i: {{ loop.index0 }}"></i>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {# ---- Patients panel ---- #}
+      <div class="lp-panel" role="tabpanel" id="panel-patients" aria-labelledby="tab-patients" hidden>
+        <div class="lp-panel-copy">
+          <h3>Снимки, 3D-модели и план лечения в одной карте</h3>
+          <p>
+            Путь пациента — одна лента: когда завели карту, что загрузили,
+            какой этап лечения выполнили. Каждое обращение к карте
+            записывается в журнал доступа.
+          </p>
+          <ul class="lp-checklist">
+            {% for item in ['Поиск по имени, телефону и номеру карты', 'История снимков и 3D-моделей', 'Этапы лечения со статусами'] %}
+            <li>{{ icon('check', 'icon--sm') }}{{ item }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+        <div class="lp-mock-frame">
+          <div class="lp-mock" role="img" aria-label="Экран списка пациентов клиники">
+            <div class="lp-mock-bar"><span class="lp-mock-dots"><i></i><i></i><i></i></span></div>
+            <div class="lp-mock-body lp-mock-body--pad">
+              <div class="lp-mock-table">
+                {% for initials, w1, w2, badge in [
+                  ('КВ', '62%', '38%', '3'), ('АА', '48%', '52%', '2'),
+                  ('СА', '70%', '30%', '2'), ('ПМ', '54%', '44%', '1'),
+                  ('ИИ', '58%', '36%', '1'),
+                ] %}
+                <div class="lp-mock-row" style="--i: {{ loop.index0 }}">
+                  <span class="lp-mock-avatar">{{ initials }}</span>
+                  <span class="lp-mock-line" style="--w: {{ w1 }}"></span>
+                  <span class="lp-mock-line lp-mock-line--dim" style="--w: {{ w2 }}"></span>
+                  <span class="lp-mock-chip">{{ badge }}</span>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{# ─────────────────────────── Как это работает ─────────────────────────── #}
+<section class="section lp-how">
+  <div class="container">
+    <div class="lp-head lp-head--center" data-reveal>
+      <span class="lp-kicker">{{ icon('activity', 'icon--sm') }}Как это работает</span>
+      <h2>От файла до плана лечения</h2>
+    </div>
+
+    <ol class="lp-steps">
+      {% for name, title, body in [
+        ('upload', 'Загрузите снимок',
+         'Перетащите файл в браузер. JPEG, PNG, WebP, BMP и TIFF, до 24 МБ. Анализ стартует автоматически.'),
+        ('check-circle', 'Проверьте находки',
+         'Модель отмечает области и предлагает номер зуба. Вы подтверждаете, отклоняете или правите — решение становится частью записи.'),
+        ('clipboard', 'Соберите план',
+         'По подтверждённым находкам собирается черновик плана: процедуры, приоритеты, число визитов. Всё редактируется.'),
+        ('cube', 'Добавьте 3D',
+         'Интраоральные сканы и модели прикрепляются к той же карте и открываются прямо в браузере.'),
+      ] %}
+      <li class="lp-step" data-reveal style="--reveal-index: {{ loop.index0 }}">
+        <span class="lp-step-num">{{ '%02d'|format(loop.index) }}</span>
+        <span class="lp-step-icon">{{ icon(name) }}</span>
+        <h3>{{ title }}</h3>
+        <p>{{ body }}</p>
+      </li>
+      {% endfor %}
+    </ol>
+  </div>
+</section>
+
+{# ────────────────────────────── FAQ ────────────────────────────── #}
+<section class="section lp-faq-section">
+  <div class="container lp-faq-layout">
+    <div class="lp-head" data-reveal>
+      <span class="lp-kicker">{{ icon('alert-circle', 'icon--sm') }}Вопросы</span>
+      <h2>Коротко о главном</h2>
+      <p>Не нашли ответ? <a href="/contact">Напишите нам</a>.</p>
+    </div>
+
+    <div class="faq" data-reveal>
+      {% for question, answer in [
+        ('Заменяет ли Dentist-AI врача?',
+         'Нет. Это инструмент поддержки принятия решений. Модель отмечает области и оценивает уверенность,
+          но заключение ставит врач — и каждое подтверждение фиксируется в карте под его именем.'),
+        ('Насколько точен номер зуба?',
+         'Это оценка по положению области на снимке, а не измерение. На неправильно позиционированном
+          снимке она смещается, поэтому номер редактируется в один клик, и правка врача сохраняется.'),
+        ('Что происходит с 3D-файлом при загрузке?',
+         'STL, PLY и OBJ разбираются на сервере и пересохраняются в бинарный STL: остаётся только
+          геометрия. Всё остальное, что было в файле, до просмотрщика не доходит.'),
+        ('Нужна ли интеграция с нашей МИС?',
+         'Нет. Достаточно браузера. Находки выгружаются в CSV — с классом, уверенностью, номером зуба
+          и решением врача по каждой.'),
+        ('На каких снимках обучена модель?',
+         'На размеченных ортопантомограммах. На прицельных снимках и КЛКТ-срезах качество не
+          гарантируется. Класс-лист сверяется с таксономией продукта перед каждым запуском обучения.'),
+      ] %}
+      <details class="faq-item"{% if loop.first %} open{% endif %}>
+        <summary>
+          <span>{{ question }}</span>
+          <span class="faq-chevron" aria-hidden="true">{{ icon('chevron-down', 'icon--sm') }}</span>
+        </summary>
+        <p>{{ answer }}</p>
+      </details>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{# ──────────────────────────── Final CTA ──────────────────────────── #}
+<section class="lp-final">
+  <div class="container lp-final-inner" data-reveal>
+    <h2>Попробуйте на своём снимке</h2>
+    <p>Регистрация занимает минуту. Тарифы — на <a href="/pricing">отдельной странице</a>.</p>
+    <div class="lp-cta-row lp-cta-row--center">
+      <a class="btn btn--primary btn--lg lp-cta" href="/register">
+        Создать аккаунт клиники
+        {{ icon('arrow-right', 'lp-cta-arrow') }}
+      </a>
+      <a class="btn btn--lg lp-cta-ghost" href="/contact">
+        {{ icon('mail') }}Написать нам
+      </a>
+    </div>
+    <p class="lp-final-note">
+      {{ icon('shield', 'icon--sm') }}
+      Инструмент поддержки принятия решений. Не заменяет заключение врача.
+    </p>
+  </div>
+</section>
+{% endblock %}

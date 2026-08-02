@@ -1,0 +1,97 @@
+{% extends "auth/_layout.html" %}
+{% from "partials/icons.html" import icon %}
+
+{% block form %}
+<h1>Регистрация клиники</h1>
+<p>Создайте аккаунт — карта не потребуется.</p>
+
+<form class="auth-form" data-register-form action="/api/v1/auth/register" method="post" novalidate>
+  <div class="field">
+    <label class="field-label" for="fullName">Ваше имя</label>
+    <input class="input" id="fullName" name="fullName" type="text"
+           autocomplete="name" placeholder="Айгуль Сагиндикова" required
+           aria-describedby="fullName-error">
+    <p class="field-error" id="fullName-error" data-error-for="fullName"></p>
+  </div>
+
+  <div class="field">
+    <label class="field-label" for="organizationName">Название клиники</label>
+    <input class="input" id="organizationName" name="organizationName" type="text"
+           autocomplete="organization" placeholder="Клиника Смайл" required
+           aria-describedby="organizationName-error">
+    <p class="field-error" id="organizationName-error" data-error-for="organizationName"></p>
+  </div>
+
+  <div class="field">
+    <label class="field-label" for="email">Рабочий email</label>
+    <input class="input" id="email" name="email" type="email"
+           autocomplete="username" inputmode="email"
+           placeholder="doctor@clinic.kz" required
+           aria-describedby="email-error">
+    <p class="field-error" id="email-error" data-error-for="email"></p>
+  </div>
+
+  <div class="field">
+    <label class="field-label" for="password">Пароль</label>
+    <div class="password-field">
+      <input class="input" id="password" name="password" type="password"
+             autocomplete="new-password" minlength="10" required
+             data-password-strength-input
+             aria-describedby="password-hint password-error">
+      {# Both glyphs are rendered; `aria-pressed` picks which one is shown, so
+         the visual and the announced state cannot drift apart. #}
+      <button type="button" class="password-toggle"
+              data-toggle-password="#password"
+              aria-pressed="false" aria-label="Показать пароль">
+        {{ icon('eye', 'password-icon-show') }}{{ icon('eye-off', 'password-icon-hide') }}
+      </button>
+    </div>
+    <div class="strength" aria-hidden="true">
+      <div class="strength-track">
+        <div class="strength-fill" data-password-strength data-level="0"></div>
+      </div>
+      <span class="strength-label" data-password-strength-label></span>
+    </div>
+    <p class="field-hint" id="password-hint">Минимум 10 символов. Длина важнее спецсимволов.</p>
+    <p class="field-error" id="password-error" data-error-for="password"></p>
+  </div>
+
+  <div class="field">
+    <label class="field-label" for="passwordConfirm">Повторите пароль</label>
+    <input class="input" id="passwordConfirm" name="passwordConfirm" type="password"
+           autocomplete="new-password" required
+           aria-describedby="passwordConfirm-error">
+    <p class="field-error" id="passwordConfirm-error" data-error-for="passwordConfirm"></p>
+  </div>
+
+  <button class="btn btn--primary btn--lg btn--block" type="submit">Создать аккаунт</button>
+</form>
+
+<p class="auth-footer">
+  Уже зарегистрированы? <a href="/login">Войти</a>
+</p>
+{% endblock %}
+
+{% block aside %}
+<div class="auth-aside-inner">
+  <span class="eyebrow">{{ icon('sparkles', 'icon--sm') }}Первые 50 снимков бесплатно</span>
+
+  <p class="auth-aside-lead">
+    Аккаунт клиники создаётся за минуту: интеграция не нужна, достаточно
+    загрузить первый снимок.
+  </p>
+
+  <ul class="auth-points">
+    {% for icon_name, label in [
+      ('sparkles', 'Первые 50 снимков бесплатно'),
+      ('shield', 'Данные клиники изолированы от других организаций'),
+      ('check-circle', 'Отмена в любой момент, без звонков'),
+    ] %}
+    <li>
+      <span class="auth-point-icon" aria-hidden="true">{{ icon(icon_name, 'icon--sm') }}</span>
+      <span>{{ label }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

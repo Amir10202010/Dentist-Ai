@@ -1,0 +1,100 @@
+{% extends "app/_layout.html" %}
+{% from "partials/icons.html" import icon %}
+{% set page_key = 'patients' %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Пациенты</h1>
+    <p><span data-patients-summary></span></p>
+  </div>
+  <div class="cluster">
+    <label class="visually-hidden" for="patients-search">Поиск пациентов</label>
+    <input class="input search-input" id="patients-search" type="search"
+           data-patients-search placeholder="Имя, телефон или номер карты"
+           style="inline-size: min(20rem, 60vw)">
+    <button type="button" class="btn btn--primary" data-add-patient>
+      {{ icon('plus') }}Добавить
+    </button>
+  </div>
+</div>
+
+<div class="table-wrap">
+  <table class="table">
+    <caption class="visually-hidden">Список пациентов клиники</caption>
+    <thead>
+      <tr>
+        <th scope="col">Пациент</th>
+        <th scope="col">Телефон</th>
+        <th scope="col">Возраст</th>
+        <th scope="col">Снимков</th>
+        <th scope="col">3D</th>
+        <th scope="col">Этапов</th>
+        <th scope="col">Последний снимок</th>
+        <th scope="col"><span class="visually-hidden">Действия</span></th>
+      </tr>
+    </thead>
+    <tbody data-patients-body aria-live="polite"></tbody>
+  </table>
+</div>
+
+<dialog class="dialog" data-patient-dialog aria-labelledby="patient-dialog-title">
+  <form novalidate>
+    <div class="dialog-header">
+      <h2 class="dialog-title" id="patient-dialog-title" data-dialog-title>Новый пациент</h2>
+      <button type="button" class="btn btn--icon btn--ghost btn--sm" data-close-dialog
+              aria-label="Закрыть">{{ icon('close') }}</button>
+    </div>
+
+    <div class="dialog-body stack">
+      <div class="field">
+        <label class="field-label" for="p-name">ФИО</label>
+        <input class="input" id="p-name" name="fullName" type="text"
+               autocomplete="off" required aria-describedby="p-name-error">
+        <p class="field-error" id="p-name-error" data-error-for="fullName"></p>
+      </div>
+
+      <div class="auto-grid" style="--grid-min: 12rem; --grid-gap: var(--space-3)">
+        <div class="field">
+          <label class="field-label" for="p-phone">Телефон</label>
+          <input class="input" id="p-phone" name="phone" type="tel"
+                 inputmode="tel" placeholder="+7 700 000 00 00">
+          <p class="field-error" data-error-for="phone"></p>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="p-dob">Дата рождения</label>
+          <input class="input" id="p-dob" name="dateOfBirth" type="date">
+          <p class="field-error" data-error-for="dateOfBirth"></p>
+        </div>
+      </div>
+
+      <div class="auto-grid" style="--grid-min: 12rem; --grid-gap: var(--space-3)">
+        <div class="field">
+          <label class="field-label" for="p-email">Email</label>
+          <input class="input" id="p-email" name="email" type="email">
+          <p class="field-error" data-error-for="email"></p>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="p-mrn">Номер карты</label>
+          <input class="input" id="p-mrn" name="medicalRecordNumber" type="text">
+          <p class="field-error" data-error-for="medicalRecordNumber"></p>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label" for="p-notes">Заметки</label>
+        <textarea class="textarea" id="p-notes" name="notes"
+                  placeholder="Аллергии, сопутствующие заболевания, особенности"></textarea>
+        <p class="field-error" data-error-for="notes"></p>
+      </div>
+    </div>
+
+    <div class="dialog-footer">
+      <button type="button" class="btn" data-close-dialog>Отмена</button>
+      <button type="submit" class="btn btn--primary">Сохранить</button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}

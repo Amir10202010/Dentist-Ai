@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% from "partials/icons.html" import icon %}
+
+{% block assets %}
+  {{ vite_preload('src/entries/auth.ts') }}
+  {{ vite_script('src/entries/auth.ts') }}
+{% endblock %}
+
+{% block seo %}
+  {{ super() }}
+  {# Sign-in screens have no business in a search index. #}
+  <meta name="robots" content="noindex, nofollow">
+{% endblock %}
+
+{% block body_attrs %} class="auth"{% endblock %}
+
+{% block layout %}
+  {# A dedicated shell rather than the marketing header: a full product nav
+     and a "Войти" button on the sign-in page invite the visitor away from the
+     one thing the page exists to do. The brand lockup is the only way back. #}
+  <main id="main" class="auth-page">
+    <div class="auth-panel">
+      <div class="auth-card">
+        <a class="brand auth-brand" href="/">
+          <span class="brand-mark" aria-hidden="true">{{ icon('stethoscope') }}</span>
+          <span>Dentist-AI</span>
+        </a>
+
+        {% block form %}{% endblock %}
+      </div>
+    </div>
+
+    <aside class="auth-aside">
+      {% block aside %}
+      <div class="auth-aside-inner">
+        <span class="eyebrow">
+          {{ icon('sparkles', 'icon--sm') }}31 класс находок
+        </span>
+
+        <p class="auth-aside-lead">
+          Находки с вероятностью, одонтограмма, 3D-сканы и план лечения — в
+          одной карте пациента.
+        </p>
+
+        <ul class="auth-points">
+          {% for icon_name, label in [
+            ('target', 'Каждая находка с оценкой уверенности модели'),
+            ('tooth', 'Номер зуба по FDI, который можно исправить'),
+            ('cube', '3D-сканы в STL, PLY и OBJ прямо в браузере'),
+            ('shield', 'Снимки недоступны за пределами вашей клиники'),
+            ('file-text', 'Журнал доступа к каждой карте пациента'),
+          ] %}
+          <li>
+            <span class="auth-point-icon" aria-hidden="true">{{ icon(icon_name, 'icon--sm') }}</span>
+            <span>{{ label }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endblock %}
+    </aside>
+  </main>
+{% endblock %}

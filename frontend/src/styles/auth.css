@@ -1,0 +1,225 @@
+/** Sign-in and registration. */
+
+/* The layout owns the whole viewport now that there is no marketing header
+   above it to subtract. */
+.auth-page {
+  display: grid;
+  min-block-size: 100svh;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/*
+ * 1fr / 1.05fr rather than a even split. The form column is the subject; an
+ * exactly symmetrical split reads as two panes of equal importance and left
+ * the testimonial floating in the middle of a large empty half.
+ */
+@media (min-width: 960px) {
+  .auth-page {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  }
+}
+
+.auth-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(var(--space-8), 5vw, var(--space-12)) var(--space-6);
+}
+
+.auth-card {
+  inline-size: min(24rem, 100%);
+}
+
+.auth-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-block-end: var(--space-8);
+  font-weight: var(--weight-semibold);
+  font-size: var(--text-md);
+  letter-spacing: var(--tracking-tight);
+  color: var(--text);
+  text-decoration: none;
+}
+
+.auth-card h1 {
+  font-size: var(--text-xl);
+  margin-block-end: var(--space-2);
+}
+
+.auth-card > p {
+  color: var(--text-muted);
+  font-size: var(--text-base);
+  margin-block-end: var(--space-6);
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.auth-footer {
+  margin-block-start: var(--space-6);
+  text-align: center;
+  font-size: var(--text-base);
+  color: var(--text-muted);
+}
+
+.password-field {
+  position: relative;
+}
+
+.password-field .input {
+  padding-inline-end: var(--space-10);
+}
+
+.password-toggle {
+  position: absolute;
+  inset-inline-end: var(--space-1);
+  inset-block-start: 50%;
+  translate: 0 -50%;
+  display: grid;
+  place-items: center;
+  inline-size: 2rem;
+  block-size: 2rem;
+  border-radius: var(--radius-sm);
+  color: var(--text-subtle);
+  transition:
+    color var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
+}
+
+.password-toggle:hover {
+  color: var(--text);
+  background: var(--surface-hover);
+}
+
+/* Stacked in one grid cell so swapping them cannot shift the button's size. */
+.password-toggle .icon {
+  grid-area: 1 / 1;
+}
+
+.password-toggle .password-icon-hide,
+.password-toggle[aria-pressed='true'] .password-icon-show {
+  display: none;
+}
+
+.password-toggle[aria-pressed='true'] .password-icon-hide {
+  display: block;
+}
+
+.strength {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-block-start: var(--space-1);
+}
+
+.strength-track {
+  flex: 1;
+  block-size: 3px;
+  border-radius: var(--radius-full);
+  background: var(--surface-sunken);
+  overflow: hidden;
+}
+
+.strength-fill {
+  block-size: 100%;
+  inline-size: 0;
+  border-radius: inherit;
+  background: var(--danger);
+  transition:
+    inline-size var(--duration-base) var(--ease-out),
+    background-color var(--duration-base) var(--ease-out);
+}
+
+.strength-fill[data-level='2'] { background: var(--warning); }
+.strength-fill[data-level='3'] { background: var(--severity-low); }
+.strength-fill[data-level='4'] { background: var(--success); }
+
+.strength-label {
+  font-size: var(--text-xs);
+  color: var(--text-subtle);
+  min-inline-size: 5ch;
+}
+
+/* ---------------------------------------------------------------------------
+   Marketing-side panel — hidden on narrow screens, where it is pure ballast
+   --------------------------------------------------------------------------- */
+.auth-aside {
+  position: relative;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-12) clamp(var(--space-8), 5vw, var(--space-16));
+  background: var(--bg-subtle);
+  border-inline-start: 1px solid var(--border);
+  overflow: hidden;
+}
+
+/* The same brand wash as the marketing hero, so the two halves of the product
+   read as one place rather than a flat grey panel bolted onto a form. */
+.auth-aside::before {
+  content: '';
+  position: absolute;
+  inset-block-start: -20%;
+  inset-inline-end: -20%;
+  inline-size: min(45rem, 90%);
+  aspect-ratio: 1;
+  background: radial-gradient(
+    circle,
+    color-mix(in oklch, var(--accent) 18%, transparent) 0%,
+    transparent 65%
+  );
+  pointer-events: none;
+}
+
+@media (min-width: 960px) {
+  .auth-aside {
+    display: flex;
+  }
+}
+
+.auth-aside-inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  max-inline-size: 28rem;
+}
+
+.auth-aside-lead {
+  font-size: var(--text-xl);
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-snug);
+  text-wrap: balance;
+}
+
+.auth-points {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-block-start: var(--space-6);
+  border-block-start: 1px solid var(--border);
+}
+
+.auth-points li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--text-muted);
+  font-size: var(--text-base);
+}
+
+.auth-point-icon {
+  display: grid;
+  place-items: center;
+  inline-size: 1.75rem;
+  block-size: 1.75rem;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--accent);
+}

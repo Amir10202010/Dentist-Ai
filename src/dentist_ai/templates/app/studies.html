@@ -1,0 +1,46 @@
+{% extends "app/_layout.html" %}
+{% from "partials/icons.html" import icon %}
+{% set page_key = 'studies' %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Снимки</h1>
+    <p>Загрузите рентгенограмму — анализ начнётся автоматически.</p>
+  </div>
+  <div class="cluster">
+    <label class="visually-hidden" for="studies-search">Поиск по снимкам</label>
+    <input class="input search-input" id="studies-search" type="search"
+           data-studies-search placeholder="Пациент, файл или ID снимка"
+           style="inline-size: min(20rem, 60vw)">
+  </div>
+</div>
+
+{#
+  A single row rather than the full-width 190px panel it replaced. The
+  dropzone is a persistent affordance, not the content of the page — at its
+  old size it pushed the actual list of studies below the fold.
+#}
+<label class="dropzone" data-dropzone tabindex="0" role="button"
+       aria-label="Загрузить снимок: нажмите или перетащите файл">
+  <input type="file" data-upload-input
+         accept="image/jpeg,image/png,image/webp,image/bmp,image/tiff">
+  <span class="dropzone-icon" aria-hidden="true">{{ icon('upload', 'icon--lg') }}</span>
+  <span class="dropzone-text">
+    <span class="dropzone-title">Перетащите снимок сюда или нажмите</span>
+    <span class="dropzone-hint">JPEG, PNG, WebP, BMP, TIFF · до 24 МБ</span>
+  </span>
+</label>
+
+<div class="between list-toolbar">
+  <span class="panel-subtitle" data-studies-summary></span>
+</div>
+
+<section class="studies-grid" data-studies-grid aria-live="polite" aria-busy="true"></section>
+
+<div class="load-more-row">
+  <button type="button" class="btn" data-load-more hidden>
+    {{ icon('chevron-down') }}Показать ещё
+  </button>
+</div>
+{% endblock %}

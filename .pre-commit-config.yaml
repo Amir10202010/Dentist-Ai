@@ -1,0 +1,46 @@
+# pre-commit install
+#
+# Kept to fast, deterministic checks. Type checking and the test suite belong
+# in CI, where a slow hook cannot make committing feel broken.
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+        # Model weights and datasets must not be committed.
+        args: [--maxkb=1024]
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: check-yaml
+      - id: check-json
+        exclude: ^frontend/tsconfig\.json$  # allows comments
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: detect-private-key
+      - id: no-commit-to-branch
+        args: [--branch, main]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.4
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: local
+    hooks:
+      - id: no-env-file
+        name: refuse to commit .env
+        entry: .env must never be committed — it holds real credentials
+        language: fail
+        files: ^\.env$
+
+      - id: frontend-typecheck
+        name: tsc --noEmit
+        entry: bash -c 'cd frontend && npx tsc --noEmit'
+        language: system
+        pass_filenames: false
+        files: ^frontend/.*\.ts$

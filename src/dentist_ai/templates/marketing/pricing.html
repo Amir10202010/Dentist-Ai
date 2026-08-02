@@ -1,0 +1,106 @@
+{% extends "marketing/_layout.html" %}
+{% from "partials/icons.html" import icon %}
+
+{# Plans as data: three cards from one template, not three copies. #}
+{% set plans = [
+  {
+    'name': 'Старт',
+    'tagline': 'Для знакомства с продуктом',
+    'price': '0 ₸',
+    'period': ' / месяц',
+    'features': ['50 снимков в месяц', '1 пользователь', 'Все 31 класс находок', 'Карты пациентов', '3D-сканы и план лечения'],
+    'cta': ('Начать', '/register'),
+    'featured': false,
+  },
+  {
+    'name': 'Клиника',
+    'tagline': 'Для практикующей клиники',
+    'price': '45 000 ₸',
+    'period': ' / месяц',
+    'features': [
+      '1 000 снимков в месяц', 'До 10 пользователей', 'Аналитика и отчёты',
+      'Выгрузка находок в CSV', 'Журнал доступа к данным',
+    ],
+    'cta': ('Попробовать 14 дней', '/register'),
+    'featured': true,
+  },
+  {
+    'name': 'Сеть',
+    'tagline': 'Для нескольких филиалов',
+    'price': 'По запросу',
+    'period': '',
+    'features': [
+      'Без лимита на снимки', 'Неограниченно пользователей',
+      'Размещение в вашем контуре', 'Интеграция с МИС', 'Выделенная поддержка',
+    ],
+    'cta': ('Связаться', '/contact'),
+    'featured': false,
+  },
+] %}
+
+{% set faqs = [
+  ('Что считается снимком?',
+   'Один загруженный файл и его анализ. Повторный анализ того же файла не тарифицируется.'),
+  ('Что происходит при превышении лимита?',
+   'Загрузка продолжает работать — мы предупреждаем и предлагаем перейти на
+    следующий тариф. Мы не блокируем доступ к уже загруженным снимкам.'),
+  ('Где хранятся данные?',
+   'Снимки и 3D-модели лежат вне публичных директорий и отдаются только
+    сотрудникам вашей клиники. Для тарифа «Сеть» возможно размещение внутри
+    инфраструктуры клиники.'),
+] %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="section-heading">
+      <h1>Тарифы</h1>
+      <p>Начните бесплатно. Платите, когда снимков станет много.</p>
+    </div>
+
+    <div class="auto-grid" style="--grid-min: 18rem; --grid-gap: var(--space-5)">
+      {% for plan in plans %}
+      <div class="plan{% if plan.featured %} plan--featured{% endif %}"
+           data-reveal style="--reveal-index: {{ loop.index0 }}">
+        <div>
+          <h2 class="panel-title">{{ plan.name }}</h2>
+          <p class="panel-subtitle">{{ plan.tagline }}</p>
+        </div>
+        {# A worded price is set smaller than a numeral: at the same size
+           "По запросу" is four times the ink of "0 ₸". #}
+        <p class="plan-price{% if not plan.period %} plan-price--worded{% endif %}">
+          {{- plan.price }}{% if plan.period %}<span>{{ plan.period }}</span>{% endif -%}
+        </p>
+        <ul class="plan-features">
+          {% for feature in plan.features %}
+          <li>
+            <span class="plan-check" aria-hidden="true">{{ icon('check', 'icon--sm') }}</span>
+            <span>{{ feature }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        <a class="btn{% if plan.featured %} btn--primary{% endif %} btn--block"
+           href="{{ plan.cta[1] }}">{{ plan.cta[0] }}</a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section section--muted">
+  <div class="container prose">
+    <h2>Частые вопросы</h2>
+    <div class="faq">
+      {% for question, answer in faqs %}
+      <details class="faq-item"{% if loop.first %} open{% endif %}>
+        <summary>
+          <span>{{ question }}</span>
+          <span class="faq-chevron" aria-hidden="true">{{ icon('chevron-down', 'icon--sm') }}</span>
+        </summary>
+        <p>{{ answer }}</p>
+      </details>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

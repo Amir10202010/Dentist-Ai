@@ -1,0 +1,49 @@
+{% from "partials/icons.html" import icon %}
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <a class="brand" href="/">
+          <span class="brand-mark" aria-hidden="true">{{ icon('stethoscope') }}</span>
+          <span>Dentist-AI</span>
+        </a>
+        <p class="panel-subtitle" style="margin-block-start: var(--space-3); max-inline-size: 32ch">
+          Помогаем стоматологам находить патологии на снимках быстрее и не пропускать важное.
+        </p>
+      </div>
+
+      <div>
+        <h2 class="footer-heading">Продукт</h2>
+        <ul class="footer-links">
+          <li><a href="/">Главная</a></li>
+          <li><a href="/about">О продукте</a></li>
+          <li><a href="/pricing">Тарифы</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="footer-heading">Компания</h2>
+        <ul class="footer-links">
+          <li><a href="/contact">Контакты</a></li>
+          <li><a href="/privacy">Конфиденциальность</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="footer-heading">Связаться</h2>
+        <ul class="footer-links">
+          <li><a href="mailto:hello@dentist-ai.app">hello@dentist-ai.app</a></li>
+          <li><a href="tel:+77000000000">+7 700 000 00 00</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>© {{ 2026 }} Dentist-AI</p>
+      <p>
+        Инструмент поддержки принятия решений. Не заменяет заключение врача.
+      </p>
+    </div>
+  </div>
+</footer>

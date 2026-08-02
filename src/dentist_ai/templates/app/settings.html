@@ -1,0 +1,150 @@
+{% extends "app/_layout.html" %}
+{% from "partials/icons.html" import icon %}
+{% set page_key = 'settings' %}
+
+{% set role_labels = {'owner': 'Владелец', 'dentist': 'Врач', 'assistant': 'Ассистент'} %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Настройки</h1>
+    <p>Профиль, язык интерфейса и безопасность аккаунта.</p>
+  </div>
+</div>
+
+{#
+  A two-column reading layout rather than an intrinsic grid of equal cards.
+  `auto-fit` sized all four panels to the tallest, so "Организация" — four
+  lines of text — stretched to the height of a three-field form and left a
+  block of empty space, and the shortcuts card was orphaned on a row of its
+  own. Forms lead in the wide column; reference material sits beside them.
+#}
+<div class="settings-layout">
+  <div class="settings-column">
+    <section class="card settings-section">
+      <header class="settings-head">
+        <span class="settings-icon" aria-hidden="true">{{ icon('user') }}</span>
+        <div>
+          <h2 class="panel-title">Профиль</h2>
+          <p class="panel-subtitle">Как вас видят коллеги в клинике.</p>
+        </div>
+      </header>
+
+      <form class="stack" data-profile-form novalidate>
+        <div class="field">
+          <label class="field-label" for="s-name">Имя</label>
+          <input class="input" id="s-name" name="fullName" type="text"
+                 value="{{ user.full_name }}" autocomplete="name" required>
+          <p class="field-error" data-error-for="fullName"></p>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="s-email">Email</label>
+          <input class="input" id="s-email" type="email" value="{{ user.email }}" disabled>
+          <p class="field-hint">Для смены адреса напишите в поддержку.</p>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="s-locale">Язык интерфейса</label>
+          <select class="select input" id="s-locale" name="locale">
+            <option value="ru"{% if user.locale == 'ru' %} selected{% endif %}>Русский</option>
+            <option value="en"{% if user.locale == 'en' %} selected{% endif %}>English</option>
+            <option value="kk"{% if user.locale == 'kk' %} selected{% endif %}>Қазақша</option>
+          </select>
+          <p class="field-hint">Влияет на названия находок в отчётах и интерфейсе.</p>
+          <p class="field-error" data-error-for="locale"></p>
+        </div>
+
+        {# Right-aligned in its own row: a full-width submit inside a card
+           reads as a banner, not a button. #}
+        <div class="form-actions">
+          <button class="btn btn--primary" type="submit">
+            {{ icon('check') }}Сохранить
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card settings-section">
+      <header class="settings-head">
+        <span class="settings-icon" aria-hidden="true">{{ icon('lock') }}</span>
+        <div>
+          <h2 class="panel-title">Смена пароля</h2>
+          <p class="panel-subtitle">Минимум 10 символов.</p>
+        </div>
+      </header>
+
+      <form class="stack" data-password-form novalidate>
+        <div class="field">
+          <label class="field-label" for="s-current">Текущий пароль</label>
+          <input class="input" id="s-current" name="currentPassword" type="password"
+                 autocomplete="current-password" required>
+          <p class="field-error" data-error-for="currentPassword"></p>
+        </div>
+
+        <div class="auto-grid" style="--grid-min: 13rem; --grid-gap: var(--space-3)">
+          <div class="field">
+            <label class="field-label" for="s-new">Новый пароль</label>
+            <input class="input" id="s-new" name="newPassword" type="password"
+                   autocomplete="new-password" minlength="10" required>
+            <p class="field-error" data-error-for="newPassword"></p>
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="s-confirm">Повторите пароль</label>
+            <input class="input" id="s-confirm" name="newPasswordConfirm" type="password"
+                   autocomplete="new-password" required>
+            <p class="field-error" data-error-for="newPasswordConfirm"></p>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn--primary" type="submit">
+            {{ icon('lock') }}Изменить пароль
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <aside class="settings-column">
+    <section class="card settings-section">
+      <header class="settings-head">
+        <span class="settings-icon" aria-hidden="true">{{ icon('building') }}</span>
+        <div>
+          <h2 class="panel-title">Организация</h2>
+        </div>
+      </header>
+      <dl class="meta-list">
+        <dt>Название</dt>
+        <dd>{{ user.organization.name }}</dd>
+        <dt>Идентификатор</dt>
+        <dd><code>{{ user.organization.slug }}</code></dd>
+        <dt>Ваша роль</dt>
+        <dd>
+          <span class="badge">{{ role_labels[user.role.value] }}</span>
+        </dd>
+        <dt>Последний вход</dt>
+        <dd>{{ user.last_login_at.strftime('%d.%m.%Y %H:%M') if user.last_login_at else '—' }}</dd>
+      </dl>
+    </section>
+
+    <section class="card settings-section">
+      <header class="settings-head">
+        <span class="settings-icon" aria-hidden="true">{{ icon('keyboard') }}</span>
+        <div>
+          <h2 class="panel-title">Горячие клавиши</h2>
+        </div>
+      </header>
+      <dl class="meta-list">
+        <dt>Палитра команд</dt>
+        <dd><kbd>⌘</kbd> <kbd>K</kbd></dd>
+        <dt>Быстрый поиск</dt>
+        <dd><kbd>/</kbd></dd>
+        <dt>Закрыть окно</dt>
+        <dd><kbd>Esc</kbd></dd>
+      </dl>
+    </section>
+  </aside>
+</div>
+{% endblock %}

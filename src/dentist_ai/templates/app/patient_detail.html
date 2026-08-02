@@ -1,0 +1,165 @@
+{% extends "app/_layout.html" %}
+{% from "partials/icons.html" import icon %}
+{% set page_key = 'patient-detail' %}
+
+{% block body_data %} data-patient-id="{{ patient_id }}"{% endblock %}
+
+{% set tabs = [
+  ('timeline', 'Путь лечения', 'activity'),
+  ('plan', 'План лечения', 'clipboard'),
+  ('studies', 'Снимки', 'scan'),
+  ('scans', '3D-модели', 'cube'),
+] %}
+
+{% block content %}
+<div class="page-header">
+  <div class="study-heading">
+    <a class="back-link" href="/app/patients">
+      {{ icon('arrow-left', 'icon--sm') }}Все пациенты
+    </a>
+    <h1 data-patient-name class="skeleton skeleton--title">&nbsp;</h1>
+    <p class="study-submeta">
+      <span class="study-submeta-item">
+        {{ icon('file-text', 'icon--sm icon--muted') }}
+        Карта <span data-patient-chart>—</span>
+      </span>
+      <span class="study-submeta-item">
+        {{ icon('phone', 'icon--sm icon--muted') }}
+        <span data-patient-phone>—</span>
+      </span>
+      <span class="study-submeta-item">
+        {{ icon('calendar', 'icon--sm icon--muted') }}
+        <span data-patient-birth>—</span>
+      </span>
+    </p>
+  </div>
+  <div class="cluster">
+    <button type="button" class="btn btn--sm" data-upload-scan>
+      {{ icon('cube', 'icon--sm') }}Загрузить 3D-модель
+    </button>
+    <button type="button" class="btn btn--sm btn--primary" data-propose-plan>
+      {{ icon('sparkles', 'icon--sm') }}Черновик плана по снимку
+    </button>
+  </div>
+</div>
+
+<div class="stat-row">
+  {% for label, key, name in [
+    ('Снимков', 'studies', 'scan'),
+    ('3D-моделей', 'scans', 'cube'),
+    ('Открытых этапов', 'open-items', 'clipboard'),
+  ] %}
+  <div class="stat-tile">
+    <span class="stat-tile-icon" aria-hidden="true">{{ icon(name) }}</span>
+    <div>
+      <p class="stat-tile-value" data-count-{{ key }}>—</p>
+      <p class="stat-tile-label">{{ label }}</p>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="tabs" role="tablist" aria-label="Разделы карты пациента">
+  {% for id, label, name in tabs %}
+  <button type="button" class="tab" role="tab" id="ptab-{{ id }}"
+          data-patient-tab aria-controls="ppanel-{{ id }}"
+          aria-selected="{{ 'true' if loop.first else 'false' }}"
+          tabindex="{{ '0' if loop.first else '-1' }}">
+    {{ icon(name, 'icon--sm') }}<span>{{ label }}</span>
+  </button>
+  {% endfor %}
+</div>
+
+<div class="tab-panel" role="tabpanel" id="ppanel-timeline" aria-labelledby="ptab-timeline">
+  <section class="card">
+    <div class="between" style="margin-block-end: var(--space-4)">
+      <h2 class="panel-title">Путь лечения</h2>
+      <p class="panel-subtitle">Снимки, модели и этапы лечения в одной ленте</p>
+    </div>
+    <div data-timeline></div>
+  </section>
+</div>
+
+<div class="tab-panel" role="tabpanel" id="ppanel-plan" aria-labelledby="ptab-plan" hidden>
+  <div class="between" style="margin-block-end: var(--space-4)">
+    <p class="panel-subtitle">
+      Этапы предлагаются по таблице протоколов. Согласование и порядок — за врачом.
+    </p>
+    <button type="button" class="btn btn--sm" data-new-plan>
+      {{ icon('plus', 'icon--sm') }}Новый план
+    </button>
+  </div>
+  <div class="stack" data-patient-plans></div>
+</div>
+
+<div class="tab-panel" role="tabpanel" id="ppanel-studies" aria-labelledby="ptab-studies" hidden>
+  <section class="card">
+    <h2 class="panel-title" style="margin-block-end: var(--space-4)">Снимки</h2>
+    <div data-patient-studies></div>
+  </section>
+</div>
+
+<div class="tab-panel" role="tabpanel" id="ppanel-scans" aria-labelledby="ptab-scans" hidden>
+  <section class="card">
+    <div class="between" style="margin-block-end: var(--space-4)">
+      <h2 class="panel-title">3D-модели</h2>
+      <p class="panel-subtitle">STL, PLY и OBJ — до 96 МБ</p>
+    </div>
+    <div data-patient-scans></div>
+  </section>
+</div>
+
+<dialog class="dialog" data-scan-dialog aria-labelledby="scan-dialog-title">
+  <form data-scan-form>
+    <div class="dialog-header">
+      <h2 class="dialog-title" id="scan-dialog-title">
+        <span class="dialog-icon" aria-hidden="true">{{ icon('cube') }}</span>
+        Загрузить 3D-модель
+      </h2>
+    </div>
+    <div class="dialog-body stack">
+      <div class="field">
+        <label class="field-label" for="scan-file">Файл модели</label>
+        <input class="input" type="file" id="scan-file" name="file"
+               accept=".stl,.ply,.obj,model/stl,model/obj" required>
+        <p class="field-hint">
+          Файл пересохраняется в бинарный STL: остаётся только геометрия.
+        </p>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label" for="scan-kind">Тип</label>
+          <select class="select" id="scan-kind" name="kind">
+            <option value="intraoral">Интраоральный скан</option>
+            <option value="plaster_model">Скан гипсовой модели</option>
+            <option value="cbct_surface">Поверхность из КЛКТ</option>
+            <option value="restoration_design">CAD-конструкция</option>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field-label" for="scan-arch">Челюсть</label>
+          <select class="select" id="scan-arch" name="arch">
+            <option value="both">Обе</option>
+            <option value="upper">Верхняя</option>
+            <option value="lower">Нижняя</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label" for="scan-date">Дата сканирования</label>
+        <input class="input" type="date" id="scan-date" name="capturedOn">
+      </div>
+      <div class="field">
+        <label class="field-label" for="scan-notes">Заметка</label>
+        <textarea class="input" id="scan-notes" name="notes" rows="2"></textarea>
+      </div>
+    </div>
+    <div class="dialog-footer">
+      <button class="btn" type="button" data-close-dialog>Отмена</button>
+      <button class="btn btn--primary" type="submit">
+        {{ icon('upload', 'icon--sm') }}Загрузить
+      </button>
+    </div>
+  </form>
+</dialog>
+{% endblock %}
