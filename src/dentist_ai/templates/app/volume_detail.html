@@ -1,0 +1,314 @@
+{% extends "app/_layout.html" %}
+{% from "partials/icons.html" import icon %}
+{% set page_key = 'volume-detail' %}
+
+{% block body_data %} data-volume-id="{{ public_id }}"{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="study-heading">
+    <a class="back-link" href="/app/volumes">
+      {{ icon('arrow-left', 'icon--sm') }}Все КЛКТ
+    </a>
+    <h1 data-volume-patient class="skeleton skeleton--title">&nbsp;</h1>
+    <p class="study-submeta">
+      <span class="study-submeta-item">
+        {{ icon('file-text', 'icon--sm icon--muted') }}
+        <span data-volume-filename class="study-filename">—</span>
+      </span>
+      <span class="study-submeta-item">
+        {{ icon('layers', 'icon--sm icon--muted') }}
+        <span data-volume-fov>—</span>
+      </span>
+      <span class="study-submeta-item">
+        {{ icon('clock', 'icon--sm icon--muted') }}
+        <span data-volume-created>—</span>
+      </span>
+      <a class="study-submeta-item" href="#" data-volume-patient-link hidden>
+        {{ icon('user', 'icon--sm icon--muted') }}<span>Карта пациента</span>
+      </a>
+    </p>
+  </div>
+  <div class="cluster">
+    <button type="button" class="btn btn--sm" data-reanalyse>
+      {{ icon('sparkles', 'icon--sm') }}Повторный анализ
+    </button>
+    <button type="button" class="btn btn--sm btn--danger" data-delete-volume>
+      {{ icon('trash', 'icon--sm') }}Удалить
+    </button>
+  </div>
+</div>
+
+{# The disclaimer sits above the viewer rather than below the findings: it has
+   to be read before the findings are, not after. #}
+<p class="viewer-disclaimer" data-volume-disclaimer>{{ volume_disclaimer }}</p>
+
+<div class="volume-layout" data-viewer data-layout="mpr" data-tool="cursor">
+  <div class="volume-stage">
+    {# ---------------------------------------------------------------- #}
+    {# Toolbar                                                          #}
+    {# ---------------------------------------------------------------- #}
+    <div class="volume-toolbar">
+      <div class="toolbar-group" role="group" aria-label="Компоновка">
+        <button type="button" class="toolbar-btn" data-layout="mpr" aria-pressed="true"
+                title="Три проекции (1)">{{ icon('dashboard', 'icon--sm') }}<span>2D</span></button>
+        <button type="button" class="toolbar-btn" data-layout="volume" aria-pressed="false"
+                title="Объём (2)">{{ icon('cube', 'icon--sm') }}<span>3D</span></button>
+        <button type="button" class="toolbar-btn" data-layout="split" aria-pressed="false"
+                title="2D + 3D (3)">{{ icon('columns', 'icon--sm') }}<span>2D+3D</span></button>
+      </div>
+
+      <div class="toolbar-group" role="group" aria-label="Инструмент">
+        <button type="button" class="toolbar-btn" data-tool="cursor" aria-pressed="true"
+                title="Перекрестие (V)">{{ icon('crosshair', 'icon--sm') }}</button>
+        <button type="button" class="toolbar-btn" data-tool="window" aria-pressed="false"
+                title="Яркость и контраст (W)">{{ icon('contrast', 'icon--sm') }}</button>
+        <button type="button" class="toolbar-btn" data-tool="pan" aria-pressed="false"
+                title="Сдвиг (H)">{{ icon('move', 'icon--sm') }}</button>
+        <button type="button" class="toolbar-btn" data-tool="distance" aria-pressed="false"
+                title="Расстояние (D)">{{ icon('ruler', 'icon--sm') }}</button>
+        <button type="button" class="toolbar-btn" data-tool="angle" aria-pressed="false"
+                title="Угол (A)">{{ icon('angle', 'icon--sm') }}</button>
+        <button type="button" class="toolbar-btn" data-tool="probe" aria-pressed="false"
+                title="Плотность в точке (P)">{{ icon('target', 'icon--sm') }}</button>
+        <button type="button" class="toolbar-btn" data-tool="annotate" aria-pressed="false"
+                title="Аннотация (N)">{{ icon('pin', 'icon--sm') }}</button>
+      </div>
+
+      <div class="toolbar-group toolbar-group--presets" role="group" aria-label="Окно плотности">
+        <button type="button" class="toolbar-chip" data-preset="bone" aria-pressed="true">Кость</button>
+        <button type="button" class="toolbar-chip" data-preset="teeth" aria-pressed="false">Зубы</button>
+        <button type="button" class="toolbar-chip" data-preset="soft" aria-pressed="false">Мягкие</button>
+        <button type="button" class="toolbar-chip" data-preset="sinus" aria-pressed="false">Пазухи</button>
+      </div>
+
+      <div class="toolbar-group toolbar-group--modes" role="group" aria-label="Режим 3D">
+        <button type="button" class="toolbar-chip" data-render-mode="composite" aria-pressed="true">Объём</button>
+        <button type="button" class="toolbar-chip" data-render-mode="mip" aria-pressed="false">MIP</button>
+        <button type="button" class="toolbar-chip" data-render-mode="xray" aria-pressed="false">Рентген</button>
+      </div>
+
+      <div class="toolbar-spacer"></div>
+
+      <div class="toolbar-readouts">
+        <span class="readout" title="Окно плотности" data-window-readout>—</span>
+        <span class="readout" title="Положение перекрестия" data-position-readout>—</span>
+        <span class="readout readout--accent" title="Плотность под курсором" data-probe-readout>— HU</span>
+      </div>
+
+      <button type="button" class="toolbar-btn" data-reset-view title="Сбросить вид">
+        {{ icon('maximize', 'icon--sm') }}
+      </button>
+    </div>
+
+    {# ---------------------------------------------------------------- #}
+    {# Panes                                                            #}
+    {# ---------------------------------------------------------------- #}
+    <div class="volume-panes">
+      {% for plane, label in [('axial', 'Аксиальная'), ('coronal', 'Коронарная'), ('sagittal', 'Сагиттальная')] %}
+      <figure class="volume-pane" data-pane="{{ plane }}">
+        <canvas tabindex="0"
+                aria-label="{{ label }} проекция. Колесо — срез, ⌘+колесо — масштаб, Shift+перетаскивание — сдвиг."></canvas>
+        <figcaption class="pane-footer">
+          <input class="range range--slim" type="range" data-slice="{{ plane }}"
+                 aria-label="Срез: {{ label }} проекция">
+          <span class="pane-index" data-slice-readout="{{ plane }}">—</span>
+        </figcaption>
+      </figure>
+      {% endfor %}
+
+      <figure class="volume-pane volume-pane--3d" data-pane="volume">
+        <canvas tabindex="0"
+                aria-label="Объёмная реконструкция. Перетаскивание — вращение, колесо — масштаб, клик — перейти к структуре."></canvas>
+        <p class="pane-notice" data-volume-error hidden></p>
+        <figcaption class="pane-footer pane-footer--clip">
+          {% for axis, label in [('x', 'X'), ('y', 'Y'), ('z', 'Z')] %}
+          <label class="clip-control">
+            <span>{{ label }}</span>
+            <input class="range range--slim" type="range" min="5" max="100" value="100" step="1"
+                   data-clip-{{ axis }} aria-label="Отсечение по оси {{ label }}">
+          </label>
+          {% endfor %}
+        </figcaption>
+      </figure>
+    </div>
+
+    <div class="volume-sliders">
+      <label class="slider-control">
+        <span>Центр</span>
+        <input class="range range--slim" type="range" min="0" max="255" step="1" data-window-center
+               aria-label="Центр окна плотности">
+      </label>
+      <label class="slider-control">
+        <span>Ширина</span>
+        <input class="range range--slim" type="range" min="2" max="512" step="1" data-window-width
+               aria-label="Ширина окна плотности">
+      </label>
+      <div class="switch-row">
+        <label class="switch"><input type="checkbox" data-invert><span>Инверсия</span></label>
+        <label class="switch"><input type="checkbox" data-crosshair checked><span>Перекрестие</span></label>
+        <label class="switch"><input type="checkbox" data-show-findings checked><span>Находки</span></label>
+        <label class="switch"><input type="checkbox" data-show-measurements checked><span>Измерения</span></label>
+        <label class="switch"><input type="checkbox" data-show-annotations checked><span>Аннотации</span></label>
+      </div>
+    </div>
+  </div>
+
+  {# ------------------------------------------------------------------ #}
+  {# Side panels                                                        #}
+  {# ------------------------------------------------------------------ #}
+  <aside class="volume-side">
+    <section class="card card--tight" data-quality-card hidden>
+      <h2 class="panel-title">Качество исследования</h2>
+      <div class="quality-row">
+        <div class="quality-gauge" data-quality-gauge role="img" aria-label="Оценка качества"></div>
+        <div>
+          <p class="quality-label" data-quality-label>—</p>
+          <p class="panel-subtitle" data-quality-note></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card card--tight">
+      <div class="panel-head">
+        <h2 class="panel-title">Находки <span class="count-pill" data-finding-count>0</span></h2>
+        <button type="button" class="btn btn--ghost btn--xs" data-clear-isolate hidden>
+          Показать все
+        </button>
+      </div>
+      <div class="class-filters" data-class-filters></div>
+      <ol class="finding-list" data-finding-list>
+        <li class="skeleton skeleton--row">&nbsp;</li>
+        <li class="skeleton skeleton--row">&nbsp;</li>
+        <li class="skeleton skeleton--row">&nbsp;</li>
+      </ol>
+      <p class="empty-note" data-finding-empty hidden>Патологических находок не обнаружено.</p>
+    </section>
+
+    <section class="card card--tight">
+      <div class="panel-head">
+        <h2 class="panel-title">Измерения <span class="count-pill" data-measurement-count>0</span></h2>
+      </div>
+      <p class="panel-subtitle">
+        Выберите инструмент «Расстояние» или «Угол» и отметьте точки на срезе.
+      </p>
+      <ul class="measure-list" data-measurement-list></ul>
+    </section>
+
+    <section class="card card--tight">
+      <div class="panel-head">
+        <h2 class="panel-title">Аннотации <span class="count-pill" data-annotation-count>0</span></h2>
+      </div>
+      <ul class="measure-list" data-annotation-list></ul>
+    </section>
+
+    {# The assistant sits above the technical panels: it is the thing a
+       clinician reaches for while looking at the scan, not a settings screen. #}
+    <section class="card card--tight assistant-card">
+      <div class="panel-head">
+        <h2 class="panel-title">
+          <span class="assistant-mark" aria-hidden="true">{{ icon('sparkles', 'icon--sm') }}</span>
+          Ассистент по случаю
+        </h2>
+      </div>
+      <p class="panel-subtitle assistant-scope">
+        Отвечает только по данным этого исследования и ссылается на записи,
+        из которых собран ответ.
+      </p>
+
+      <ol class="chat-log" data-assistant-log aria-live="polite" aria-label="Диалог с ассистентом"></ol>
+      <div class="suggestion-bar" data-assistant-suggestions></div>
+
+      <form class="chat-form" data-assistant-form>
+        <label class="visually-hidden" for="assistant-input">Вопрос ассистенту</label>
+        <input class="input chat-input" id="assistant-input" data-assistant-input
+               autocomplete="off" placeholder="Спросите об этом снимке…">
+        <button type="submit" class="btn btn--primary btn--icon" data-assistant-send
+                aria-label="Отправить вопрос">{{ icon('arrow-right', 'icon--sm') }}</button>
+      </form>
+    </section>
+
+    <section class="card card--tight" data-plan-card>
+      <div class="panel-head">
+        <h2 class="panel-title">План лечения</h2>
+        <button type="button" class="btn btn--sm btn--primary" data-generate-plan>
+          {{ icon('sparkles', 'icon--sm') }}Сформировать
+        </button>
+      </div>
+      <p class="panel-subtitle" data-plan-empty>
+        План собирается из подтверждённых находок и предлагает несколько
+        вариантов объёма — ничего не назначается автоматически.
+      </p>
+      <div class="plan-proposal" data-plan-proposal hidden></div>
+    </section>
+
+    <section class="card card--tight" data-pipeline-card>
+      <h2 class="panel-title">Конвейер анализа</h2>
+      <p class="panel-subtitle" data-pipeline-version>—</p>
+      <ol class="stage-list" data-stage-list></ol>
+    </section>
+
+    <section class="card card--tight">
+      <h2 class="panel-title">О снимке</h2>
+      <dl class="meta-list">
+        <dt>Размер сетки</dt><dd data-volume-grid>—</dd>
+        <dt>Шаг воксела</dt><dd data-volume-spacing>—</dd>
+        <dt>Поле зрения</dt><dd data-volume-extent>—</dd>
+        <dt>Срезов в источнике</dt><dd data-volume-slices>—</dd>
+        <dt>Формат</dt><dd data-volume-format>—</dd>
+        <dt>Объём данных</dt><dd data-volume-bytes>—</dd>
+        <dt>Дата съёмки</dt><dd data-volume-captured>—</dd>
+        <dt>Загрузил</dt><dd data-volume-author>—</dd>
+      </dl>
+    </section>
+  </aside>
+</div>
+
+{# Placing an annotation needs a title, so the tool opens this rather than
+   silently creating an untitled pin. #}
+<dialog class="dialog" data-annotation-dialog aria-labelledby="annotation-title">
+  <form data-annotation-form>
+    <div class="dialog-header">
+      <h2 class="dialog-title" id="annotation-title">
+        <span class="dialog-icon" aria-hidden="true">{{ icon('pin') }}</span>Новая аннотация
+      </h2>
+    </div>
+    <div class="dialog-body stack">
+      <label class="field">
+        <span class="field-label">Заголовок</span>
+        <input class="input" name="title" required maxlength="160" placeholder="Например: проверить на приёме">
+      </label>
+      <label class="field">
+        <span class="field-label">Описание</span>
+        <textarea class="input" name="body" rows="3" maxlength="4000"></textarea>
+      </label>
+      <p class="panel-subtitle" data-annotation-position>—</p>
+    </div>
+    <div class="dialog-footer">
+      <button class="btn" type="button" data-annotation-cancel>Отмена</button>
+      <button class="btn btn--primary" type="submit">Сохранить</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="dialog" data-delete-dialog aria-labelledby="delete-volume-title">
+  <div class="dialog-header">
+    <h2 class="dialog-title" id="delete-volume-title">
+      <span class="dialog-icon dialog-icon--danger" aria-hidden="true">{{ icon('trash') }}</span>
+      Удалить исследование?
+    </h2>
+  </div>
+  <div class="dialog-body">
+    <p class="panel-subtitle">
+      Том, находки, измерения и аннотации будут удалены безвозвратно.
+      Запись в журнале доступа сохранится.
+    </p>
+  </div>
+  <div class="dialog-footer">
+    <form method="dialog"><button class="btn" type="submit">Отмена</button></form>
+    <button type="button" class="btn btn--danger-solid" data-confirm-delete>
+      {{ icon('trash', 'icon--sm') }}Удалить
+    </button>
+  </div>
+</dialog>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% from "partials/icons.html" import icon %}
+
+{% set nav_items = [
+  ('/about', 'О продукте'),
+  ('/pricing', 'Тарифы'),
+  ('/contact', 'Контакты'),
+] %}
+
+<header class="site-header" data-site-header>
+  <div class="container site-header-inner">
+    <a class="brand" href="/">
+      <span class="brand-mark" aria-hidden="true">{{ icon('stethoscope') }}</span>
+      <span>Dentist-AI</span>
+    </a>
+
+    <nav class="site-nav" aria-label="Основная навигация">
+      {% for href, label in nav_items %}
+      <a href="{{ href }}"{% if current_path == href %} aria-current="page"{% endif %}>{{ label }}</a>
+      {% endfor %}
+    </nav>
+
+    <div class="cluster header-actions">
+      <button type="button" class="btn btn--icon btn--ghost" data-theme-toggle
+              aria-label="Переключить тему">
+        <span class="theme-icon" aria-hidden="true">{{ icon('sun') }}{{ icon('moon') }}</span>
+      </button>
+      {% if user %}
+      <a class="btn btn--primary" href="/app">Открыть панель</a>
+      {% else %}
+      <a class="btn btn--ghost" href="/login">Войти</a>
+      <a class="btn btn--primary" href="/register">Начать бесплатно</a>
+      {% endif %}
+      <button type="button" class="nav-toggle" data-nav-toggle
+              aria-controls="mobile-menu" aria-expanded="false"
+              aria-label="Открыть меню">{{ icon('menu') }}</button>
+    </div>
+  </div>
+
+  <div class="mobile-menu" id="mobile-menu" data-open="false">
+    {% for href, label in nav_items %}
+    <a href="{{ href }}">{{ label }}</a>
+    {% endfor %}
+    {% if user %}
+    <a href="/app">Открыть панель</a>
+    {% else %}
+    <a href="/login">Войти</a>
+    <a href="/register">Начать бесплатно</a>
+    {% endif %}
+  </div>
+</header>

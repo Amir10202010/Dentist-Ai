@@ -1,0 +1,33 @@
+.git
+.github
+.venv
+venv
+__pycache__
+*.py[cod]
+.mypy_cache
+.ruff_cache
+.pytest_cache
+htmlcov
+.coverage
+
+# Secrets and runtime data must never enter an image layer.
+.env
+.env.*
+!.env.example
+var/
+*.sqlite3*
+
+# Built in the frontend stage.
+frontend/node_modules
+src/dentist_ai/static/dist
+
+# Not needed at runtime.
+training/
+docs/
+tests/
+scripts/
+models/*.pt
+*.md
+!README.md
+Makefile
+.DS_Store

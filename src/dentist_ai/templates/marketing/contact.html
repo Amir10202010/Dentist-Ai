@@ -1,0 +1,46 @@
+{% extends "marketing/_layout.html" %}
+{% from "partials/icons.html" import icon %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="section-heading">
+      <h1>Свяжитесь с нами</h1>
+      <p>Демонстрация, внедрение и вопросы по интеграции.</p>
+    </div>
+
+    <div class="auto-grid" style="--grid-min: 18rem">
+      {% for name, heading, lines in [
+        ('mail', 'Почта', [
+          ('link', 'mailto:hello@dentist-ai.app', 'hello@dentist-ai.app'),
+          ('note', '', 'Отвечаем в течение рабочего дня.'),
+        ]),
+        ('phone', 'Телефон', [
+          ('link', 'tel:+77000000000', '+7 700 000 00 00'),
+          ('note', '', 'Пн–Пт, 10:00–19:00 (UTC+5).'),
+        ]),
+        ('sparkles', 'Демонстрация', [
+          ('note', '', 'Покажем продукт на ваших снимках за 20 минут.'),
+          ('link', 'mailto:hello@dentist-ai.app?subject=Демонстрация', 'Запросить демо'),
+        ]),
+        ('shield', 'Безопасность', [
+          ('note', '', 'Вопросы об обработке данных и уязвимостях.'),
+          ('link', 'mailto:security@dentist-ai.app', 'security@dentist-ai.app'),
+        ]),
+      ] %}
+      <article class="feature-card" data-reveal style="--reveal-index: {{ loop.index0 }}">
+        <div class="feature-icon" aria-hidden="true">{{ icon(name, 'icon--lg') }}</div>
+        <h2>{{ heading }}</h2>
+        {% for kind, href, text in lines %}
+          {% if kind == 'link' %}
+        <p><a href="{{ href }}">{{ text }}</a></p>
+          {% else %}
+        <p class="panel-subtitle">{{ text }}</p>
+          {% endif %}
+        {% endfor %}
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

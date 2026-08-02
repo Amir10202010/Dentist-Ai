@@ -1,0 +1,16 @@
+{
+  "name": "Dentist-AI",
+  "short_name": "Dentist-AI",
+  "description": "ИИ-анализ дентальных рентгеновских снимков",
+  "start_url": "/app",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#0d1117",
+  "lang": "ru",
+  "icons": [
+    { "src": "/static/icons/icon-512.png", "sizes": "512x512", "type": "image/png",
+      "purpose": "any maskable" },
+    { "src": "/static/icons/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

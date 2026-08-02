@@ -1,0 +1,51 @@
+{#
+  Root document.
+
+  `no-js` on <html> is removed by the pre-paint theme script, which lets CSS
+  target the no-JavaScript case without a flash — the reveal animations, for
+  instance, stay visible rather than never firing.
+#}
+{% import "partials/icons.html" as icons with context %}
+<!doctype html>
+<html lang="{{ user.locale if user else 'ru' }}" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{{ title }}</title>
+  {% if description %}
+  <meta name="description" content="{{ description }}">
+  {% endif %}
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#0d1117" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f7f9fb" media="(prefers-color-scheme: light)">
+
+  {% block seo %}
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Dentist-AI">
+  <meta property="og:title" content="{{ title }}">
+  <meta property="og:description" content="{{ description }}">
+  <meta property="og:locale" content="ru_RU">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="canonical" href="{{ request.url.scheme }}://{{ request.url.netloc }}{{ current_path }}">
+  {% endblock %}
+
+  {% if csrf_token %}
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  {% endif %}
+
+  <link rel="icon" href="/static/icons/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
+  <link rel="manifest" href="/static/site.webmanifest">
+
+  {# Runs before first paint to avoid a flash of the wrong theme. #}
+  <script>{{ theme_init_script }}</script>
+
+  {% block assets %}{% endblock %}
+</head>
+<body{% block body_attrs %}{% endblock %}>
+  {# One sprite per document; every `icon()` call is a `<use>` of it. #}
+  {{ icons.sprite() }}
+  <a class="skip-link" href="#main">Перейти к содержимому</a>
+  {% block layout %}{% endblock %}
+</body>
+</html>

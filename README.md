@@ -1,99 +1,197 @@
-<div align="center">
+# Dentist-AI
 
-# Dentist-Ai
+Decision support for dental clinics: a detector reads a panoramic radiograph,
+the product turns its output into a per-tooth record, a report and a draft
+treatment plan, and a clinician signs off on all of it.
 
-**A Flask web app that runs a custom-trained YOLO model over dental X-rays and returns one annotated image per detected finding.**
-
-Upload a radiograph, get back the original image with boxes drawn around each finding — split into a separate file per class, so crowns, fillings and lesions can be reviewed one layer at a time. Around the detector sits a small clinic-portal shell: registration, login, and a set of marketing and dashboard pages.
-
-[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![Flask](https://img.shields.io/badge/Flask-web-000000?logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
-[![Ultralytics YOLO](https://img.shields.io/badge/Ultralytics-YOLO-0B23F5?logo=yolo&logoColor=white)](https://docs.ultralytics.com/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-database-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![OpenCV](https://img.shields.io/badge/OpenCV-annotation-5C3EE8?logo=opencv&logoColor=white)](https://opencv.org/)
-
-</div>
+[Quick start](#quick-start) · [Architecture](docs/ARCHITECTURE.md) · [Security](docs/SECURITY.md)
 
 ## What it does
 
-- **Detection.** `POST /predict` takes an uploaded image, runs the bundled YOLO checkpoint (`app/model/best.pt`) at confidence `0.25` on CPU, and returns JSON with the paths of the generated result images.
-- **One image per class.** Instead of a single cluttered overlay, the app writes a separate annotated copy for every class that had at least one detection, named after the class.
-- **10 trained classes.** Read from the checkpoint itself; labels are in Russian, as trained: Кариес (caries), Коронка (crown), Пломба (filling), Имплант (implant), Отсутствующие зубы (missing teeth), Периапикальное поражение (periapical lesion), Лечение корневого канала (root canal treatment), Осколок корня (root fragment), Ретинированный зуб (impacted tooth), Потеря костной ткани (bone loss). No accuracy figures are claimed here — none were measured in this repo.
-- **Accounts.** Register and log in against PostgreSQL, with email-format validation, an 8-character minimum, `werkzeug` password hashing and a session-cookie `login_required` guard.
-- **Pages.** A Russian-language landing page plus About, Contacts, Pricing, a privacy-policy page, and a dashboard shell behind login.
+- **Findings, not pixels.** Every detection is stored as structured data —
+  class, confidence, normalised box — so the viewer filters by confidence,
+  toggles classes and zooms without another request.
+- **Triage, not a wall of boxes.** A crown and a caries lesion are both
+  detections; only one is a problem. Findings are grouped into pathologies,
+  restorations, orthodontics, anatomy and conditions, and only pathologies
+  count toward "needs attention".
+- **A tooth number.** Each tooth-level finding is placed on an FDI odontogram
+  from its position on the image. It is an estimate; the viewer shows it as
+  editable, and the clinician's correction is what gets stored.
+- **A report.** Per-tooth groups, regional findings and the procedures those
+  findings map to in the protocol table.
+- **A treatment plan.** A draft is assembled from confirmed findings, then
+  edited: steps carry a priority, a status, a tooth and an estimate in visits
+  and minutes.
+- **3D scans.** Intraoral scans, plaster-model scans and CBCT-derived surfaces
+  in STL, PLY or OBJ, viewed in the browser with orbit, zoom and a cross
+  section.
+- **Patient records.** Studies, scans and plan steps in one dated timeline.
+- **An audit trail.** Every read and write of patient data is recorded.
 
-## How it works
+The clinician decides. Confirmations and rejections are persisted, drive the
+statistics, and become the label stream for the next training run.
 
-A request to `/predict` (registered as a Flask Blueprint in `app/predict.py`) flows like this:
+## Quick start
 
-1. The multipart field `image` is saved through `secure_filename()` into `app/static/uploads/`.
-2. `model.predict(..., conf=0.25, device="cpu")` runs the checkpoint over that file.
-3. A new output folder is created at `app/static/predicts/resN/`, where `N` is the number of existing `res*` folders plus one.
-4. For each class with at least one box, the original image is copied, every box for that class is drawn on the copy with `cv2.rectangle`, and the copy is written to `resN/<class name>.jpg`.
-5. The response is `{"success": true, "results": [...]}`, or `{"success": false, "message": "Патологии не обнаружены"}` when nothing crossed the threshold.
-
-```
-app/
-├── main.py              # Flask app: pages, session auth, /api/* endpoints
-├── predict.py           # Blueprint: loads best.pt, detects, writes annotated images
-├── model/best.pt        # custom-trained YOLO checkpoint (~52 MB, committed)
-├── templates/           # Jinja2 pages + header/footer/sidebar partials
-└── static/
-    ├── css/, js/        # one stylesheet and one script per page
-    ├── uploads/         # images posted to /predict land here
-    └── predicts/resN/   # one annotated image per detected class
-```
-
-## Running locally
-
-Requires Python 3.10+ and a reachable PostgreSQL instance. The model file `app/model/best.pt` is already committed, so there is nothing to download.
+Requires Python 3.12+ and Node 22+.
 
 ```bash
-git clone https://github.com/Amir10202010/Dentist-Ai.git
-cd Dentist-Ai
-python3 -m venv venv && source venv/bin/activate   # Windows: venv\Scripts\activate
-pip install -r requirements.txt
+make setup && make seed && make dev
 ```
 
-Create `app/.env`:
+Then open <http://127.0.0.1:8000> and sign in:
 
-```
-DB_HOST=localhost
-DB_NAME=dentist_ai
-DB_USER=postgres
-DB_PASSWORD=your_password
-FLASK_SECRET_KEY=some_long_random_string
-```
+| | |
+|---|---|
+| email | `demo@dentist-ai.app` |
+| password | `demo-clinic-2026` |
 
-The app resolves both the model path and its `.env` relative to the working directory, so start it from inside `app/`:
+`make setup` creates the virtualenv, writes a `.env` with a generated secret
+key, installs both toolchains, builds the frontend and runs migrations.
+
+> The default inference backend is `stub` — deterministic fake detections,
+> seeded from image content. It exists so the product runs end to end without
+> a 2 GB torch install. See [Running the real model](#running-the-real-model).
+
+## Commands
 
 ```bash
-cd app
-python main.py     # http://127.0.0.1:5001
+make help          # every target, described
+make dev           # run with auto-reload
+make check         # lint + typecheck + tests (what CI runs)
+make test-cov      # tests with an HTML coverage report
+make watch         # rebuild the frontend on change
+make migration m="add something"
+make docker-up     # app + Postgres, production-shaped
 ```
 
-No schema file is committed. The queries in `main.py` expect two tables — `users(id, name, email, password)` and `ai_history(id, user_id, query, response, created_at)` — which you have to create yourself before registration or history will work.
-
-The detector has no UI wired to it, so exercise it directly:
+## Running the real model
 
 ```bash
-curl -F "image=@app/static/uploads/00005.jpg" http://127.0.0.1:5001/predict
+pip install -e ".[ml]"          # torch + ultralytics
+cp /path/to/best.pt models/best.pt
 ```
 
-## Status
+Then in `.env`:
 
-A student prototype, not a product, and definitely not a medical device — nothing here has been clinically validated.
+```ini
+DENTIST_AI__ML__BACKEND=yolo
+DENTIST_AI__ML__WEIGHTS_PATH=models/best.pt
+DENTIST_AI__ML__DEVICE=cpu      # or mps, cuda, 0
+```
 
-What is actually finished: the `/predict` detection endpoint, and register/login/logout against Postgres. What is not:
+Weights are not committed. They are large, opaque to review, and
+version-controlling them makes every clone pay for every past revision.
 
-- `/predict` is reachable by API only. The dashboard's file input just prints "анализ… (демо)" after a timer and never calls it.
-- The dashboard's KPIs, charts, patient table and calendar are hard-coded demo data in `static/js/home.js`.
-- `/api/ai/run` stores a fixed placeholder string instead of calling a model.
-- `/calendar`, `/analytics` and `/settings` render templates that do not exist, and `patients.html` is an empty file — those routes error.
-- The contact form posts to `/send_message`, which is not implemented.
-- Inference runs on CPU (`device="cpu"` is hard-coded), so a full-size panoramic X-ray takes a few seconds per request.
-- `app.run(debug=True)` and the `"dev-secret"` fallback session key are development settings — replace both before exposing this anywhere.
+To train, see [`training/`](training/):
 
----
+```bash
+python training/train.py --epochs 100 --device mps
+```
 
-Built by [Amirkhan Sagyndyk](https://github.com/Amir10202010).
+The trainer verifies the dataset's class list against
+`dentist_ai.ml.taxonomy` before starting, because a silently reordered class
+list produces a model that mislabels every finding.
+
+## Architecture
+
+```
+src/dentist_ai/
+├── core/        config, security, logging, errors, rate limiting, ids
+├── db/          SQLAlchemy models and session management
+├── ml/          detector protocol, YOLO backend, stub backend, taxonomy
+├── clinical/    FDI charting, treatment protocols, report assembly, labels
+├── schemas/     Pydantic request/response contracts
+├── services/    business logic — auth, patients, studies, scans, meshes,
+│                treatment, storage, audit
+├── api/         HTTP layer — routers, dependencies, middleware, presenters
+├── web/         server-rendered pages and Vite asset resolution
+├── templates/   Jinja2
+└── static/      images, icons, built frontend bundle
+
+frontend/src/
+├── styles/      design tokens, base, components, per-area styles
+├── lib/         typed API client, DOM helpers, forms, toasts, theme
+├── features/    one module per screen, loaded on demand
+└── entries/     marketing · auth · app
+```
+
+Layers depend downward only: `api → services → db`. Nothing in `services`
+imports FastAPI, and nothing in `core` imports the application.
+
+`clinical/` is separate from `ml/`: tooth numbers, procedures and
+report text are rules a clinician can read, not model output.
+
+Full rationale, including trade-offs and known scaling limits, is in
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+## Tech
+
+| | |
+|---|---|
+| Backend | FastAPI, SQLAlchemy 2.0 (async), Alembic, Pydantic v2 |
+| Database | PostgreSQL in production, SQLite for local development |
+| Inference | Ultralytics YOLO behind a swappable protocol |
+| 3D | STL/PLY/OBJ parsed with NumPy, rendered with hand-written WebGL |
+| Frontend | Vite, TypeScript (strict), hand-written CSS with design tokens |
+| Quality | ruff, mypy (strict), pytest, GitHub Actions |
+
+No frontend framework and no 3D library. The product is server-rendered pages
+plus small per-screen TypeScript modules; the mesh viewer is one WebGL program
+over one buffer, which is the whole requirement for opaque triangles under a
+fixed light.
+
+## Configuration
+
+All settings live in `.env`, validated at boot by `core/config.py`. Nested
+values use a double underscore:
+
+```ini
+DENTIST_AI__DATABASE__URL=postgresql+asyncpg://user:pass@host/db
+DENTIST_AI__ML__BACKEND=yolo
+DENTIST_AI__SECURITY__LOGIN_RATE_LIMIT=10/5m
+DENTIST_AI__STORAGE__MAX_MESH_BYTES=100663296
+```
+
+See [`.env.example`](.env.example) for the full list. A misconfigured
+deployment fails at startup with a precise message rather than at the first
+request.
+
+## Testing
+
+```bash
+make test
+```
+
+The suite drives the real HTTP stack — middleware, CSRF, cookies, database —
+through an in-process ASGI transport. Only the detector is swapped, and even
+that is a first-class backend rather than a mock.
+
+Covered: tenant isolation across clinics, CSRF (including that the cookie
+alone grants nothing), login-failure indistinguishability, path traversal in
+uploads, EXIF stripping, decompression-bomb limits, mesh decoding across all
+five supported encodings, FDI numbering geometry, protocol-table integrity,
+and that every page actually links a stylesheet.
+
+## Deployment
+
+```bash
+docker compose up --build
+```
+
+The image runs as an unprivileged user, migrations run to completion before
+the app starts, and patient storage is a mounted volume. Behind a reverse
+proxy, terminate TLS there and keep `DENTIST_AI__ENVIRONMENT=production` so
+cookies are `Secure` and HSTS is sent.
+
+## Scope
+
+Dentist-AI is a decision-support tool. It does not diagnose, and it does not
+replace a clinician's reading of a radiograph. Tooth numbers are geometric
+estimates and treatment steps are lookups in a protocol table — neither is a
+clinical judgement. Every screen that shows a finding says so.
+
+## Licence
+
+Proprietary. All rights reserved.

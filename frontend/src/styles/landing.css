@@ -1,0 +1,1075 @@
+/**
+ * Landing page. Loaded only by `/` — the marketing sub-pages are prose and
+ * cards, and would otherwise pay for the mockups on every navigation.
+ *
+ * The product shots are HTML built from the real design tokens rather than
+ * screenshots, so they stay crisp at any DPI, follow the visitor's
+ * light/dark preference, and cannot go stale against a redesign. Internal
+ * sizing is in `em` off one clamped `font-size` on `.lp-mock`, so the whole
+ * composition scales as a single object.
+ */
+
+.lp-display {
+  /* Display type runs tighter than body copy: at 4rem the default -0.02em
+     tracking still reads loose, and Cyrillic caps especially so. */
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Hero
+   ═══════════════════════════════════════════════════════════════════ */
+.lp-hero {
+  position: relative;
+  isolation: isolate;
+  /* The bottom padding has to clear the mockup's shadow and rounded corners.
+     With none, the frame's bottom edge was sliced off by the stat band and
+     read as a clipping bug rather than a deliberate bleed. */
+  padding-block: clamp(var(--space-16), 11vw, 8.5rem) clamp(var(--space-12), 7vw, var(--space-24));
+  overflow: hidden;
+}
+
+.lp-hero-inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-inline-size: 56rem;
+}
+
+/* -- Headline -------------------------------------------------------- */
+.lp-h1 {
+  margin-block: var(--space-6) 0;
+  /* 2.125rem floor, not 2.5rem: Russian compounds like "ортопантомограмме"
+     are long, and at 40px on a 375px screen the headline ran to four ragged
+     lines. */
+  font-size: clamp(2.125rem, 6.2vw, 4.75rem);
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.038em;
+  line-height: 1.03;
+  text-wrap: balance;
+}
+
+/*
+ * The second line carries the gradient, not the whole headline: a gradient
+ * across every glyph lowers contrast on the words that matter most and reads
+ * as decoration. Restricting it to one clause makes it a deliberate accent.
+ */
+.lp-h1-accent {
+  background: linear-gradient(
+    100deg,
+    var(--accent) 0%,
+    color-mix(in oklch, var(--accent) 55%, var(--category-orthodontic)) 55%,
+    var(--accent) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  /* Falls back to a solid accent if `background-clip: text` is unsupported;
+     without this the line would render invisible. */
+  @supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+    color: var(--accent);
+  }
+}
+
+.lp-lead {
+  margin-block-start: var(--space-6);
+  max-inline-size: 44rem;
+  font-size: clamp(1.0625rem, 1.1vw + 0.85rem, 1.25rem);
+  line-height: var(--leading-relaxed);
+  color: var(--text-muted);
+  text-wrap: pretty;
+}
+
+/* -- Calls to action -------------------------------------------------- */
+.lp-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-block-start: var(--space-8);
+}
+
+.lp-cta-row--center {
+  justify-content: center;
+}
+
+.lp-cta {
+  position: relative;
+  padding-inline: var(--space-6);
+  box-shadow:
+    0 1px 0 oklch(100% 0 0 / 0.18) inset,
+    0 8px 24px color-mix(in oklch, var(--accent) 32%, transparent);
+}
+
+.lp-cta:hover:not(:disabled) {
+  box-shadow:
+    0 1px 0 oklch(100% 0 0 / 0.22) inset,
+    0 10px 30px color-mix(in oklch, var(--accent) 42%, transparent);
+}
+
+.lp-cta-arrow {
+  transition: translate var(--duration-base) var(--ease-spring);
+}
+
+.lp-cta:hover .lp-cta-arrow {
+  translate: 3px 0;
+}
+
+.lp-cta-ghost {
+  border-color: var(--border);
+  background: color-mix(in oklch, var(--surface) 60%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.lp-cta-ghost:hover {
+  border-color: var(--border-strong);
+}
+
+/*
+ * The hero frame rises and settles as it enters the viewport. A scroll
+ * timeline rather than an IntersectionObserver: the position tracks the
+ * scrollbar exactly, so it cannot desync from the user's gesture, and it
+ * costs no main-thread work.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .lp-mock-frame--hero {
+      animation: lp-rise both;
+      animation-timeline: view();
+      animation-range: entry 5% cover 34%;
+    }
+  }
+}
+
+@keyframes lp-rise {
+  from {
+    opacity: 0;
+    transform: perspective(2400px) rotateX(9deg) translateY(3.5rem) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(2400px) rotateX(0deg) translateY(0) scale(1);
+  }
+}
+
+/* The mockup runs wider than the prose column above it. */
+.lp-hero-stage {
+  margin-block-start: clamp(var(--space-10), 6vw, var(--space-16));
+  max-inline-size: 76rem;
+}
+
+.lp-mock-frame {
+  position: relative;
+  border-radius: var(--radius-2xl);
+  padding: 1px;
+  background: linear-gradient(
+    160deg,
+    color-mix(in oklch, var(--text) 18%, transparent),
+    color-mix(in oklch, var(--text) 4%, transparent) 45%
+  );
+  box-shadow:
+    0 2px 6px oklch(0% 0 0 / 0.06),
+    0 24px 60px oklch(0% 0 0 / 0.14),
+    0 60px 120px -40px color-mix(in oklch, var(--accent) 28%, transparent);
+}
+
+/*
+ * One clamped font-size drives every dimension inside the mockup, so the
+ * whole composition scales as a single object instead of needing a
+ * breakpoint per element.
+ */
+.lp-mock {
+  --mock-bg: var(--surface);
+  container-type: inline-size;
+  display: block;
+  border-radius: calc(var(--radius-2xl) - 1px);
+  background: var(--mock-bg);
+  overflow: hidden;
+  font-size: clamp(0.5rem, 0.82vw, 0.78rem);
+  line-height: 1.4;
+}
+
+.lp-mock-bar {
+  display: flex;
+  align-items: center;
+  gap: 1.5em;
+  padding: 1em 1.4em;
+  background: var(--bg-subtle);
+  border-block-end: 1px solid var(--border);
+}
+
+.lp-mock-dots {
+  display: inline-flex;
+  gap: 0.5em;
+  flex-shrink: 0;
+}
+
+.lp-mock-dots i {
+  inline-size: 0.8em;
+  block-size: 0.8em;
+  border-radius: var(--radius-full);
+  background: var(--border-strong);
+}
+
+.lp-mock-url {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.35em 1.2em;
+  margin-inline: auto;
+  border-radius: var(--radius-full);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  color: var(--text-subtle);
+  font-size: 0.95em;
+  white-space: nowrap;
+}
+
+.lp-mock-url .icon {
+  inline-size: 1em;
+  block-size: 1em;
+}
+
+.lp-mock-body {
+  display: flex;
+  min-block-size: 0;
+}
+
+.lp-mock-body--pad {
+  display: block;
+  padding: 1.6em;
+}
+
+/* -- Miniature sidebar ------------------------------------------------ */
+.lp-mock-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7em;
+  inline-size: 13em;
+  flex-shrink: 0;
+  padding: 1.2em;
+  background: var(--bg-subtle);
+  border-inline-end: 1px solid var(--border);
+}
+
+.lp-mock-brand {
+  inline-size: 60%;
+  block-size: 1.1em;
+  border-radius: var(--radius-xs);
+  background: linear-gradient(90deg, var(--accent), color-mix(in oklch, var(--accent) 40%, transparent));
+  margin-block-end: 0.8em;
+}
+
+.lp-mock-nav {
+  inline-size: 85%;
+  block-size: 0.85em;
+  border-radius: var(--radius-xs);
+  background: color-mix(in oklch, var(--text) 12%, transparent);
+}
+
+.lp-mock-nav--short { inline-size: 55%; }
+
+.lp-mock-nav.is-active {
+  background: color-mix(in oklch, var(--accent) 55%, transparent);
+}
+
+/* Hide the sidebar below the width where it stops being legible and
+   starts being three grey smudges. */
+@container (max-width: 34rem) {
+  .lp-mock-side { display: none; }
+}
+
+.lp-mock-main {
+  display: flex;
+  flex: 1;
+  min-inline-size: 0;
+}
+
+/* -- Radiograph stage ------------------------------------------------- */
+.lp-mock-stage {
+  position: relative;
+  flex: 1;
+  min-inline-size: 0;
+  /* Wider than the radiograph's own 4:3 so the mockup reads as a browser
+     window rather than a portrait image — the stage crops, it does not letterbox. */
+  aspect-ratio: 16 / 9;
+  background: oklch(12% 0.005 250);
+  overflow: hidden;
+}
+
+.lp-mock-stage img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  /* Same display-only lift as the app's thumbnails: an untouched panoramic
+     radiograph reads as a black rectangle at this size. */
+  filter: brightness(1.3) contrast(1.08);
+}
+
+/* Detection boxes. The bracket-corner treatment is the product's core
+   visual motif and is reused as the section kicker rule. */
+.lp-box {
+  position: absolute;
+  inset-inline-start: var(--x);
+  inset-block-start: var(--y);
+  inline-size: var(--w);
+  block-size: var(--h);
+  border: 1.5px solid var(--c);
+  border-radius: 2px;
+  background: color-mix(in oklch, var(--c) 12%, transparent);
+  box-shadow: 0 0 0 1px oklch(0% 0 0 / 0.4);
+}
+
+.lp-box::after {
+  content: attr(data-label);
+  position: absolute;
+  inset-block-end: calc(100% + 0.35em);
+  inset-inline-start: -1.5px;
+  padding: 0.15em 0.5em;
+  border-radius: 3px;
+  background: var(--c);
+  color: oklch(14% 0 0);
+  font-size: 0.85em;
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .lp-box {
+    animation: lp-box-in 700ms var(--ease-spring) backwards;
+    animation-delay: calc(600ms + var(--i) * 280ms);
+  }
+
+}
+
+@keyframes lp-box-in {
+  from { opacity: 0; scale: 0.82; }
+  to   { opacity: 1; scale: 1; }
+}
+
+/* -- Findings rail ---------------------------------------------------- */
+.lp-mock-rail {
+  inline-size: 17em;
+  flex-shrink: 0;
+  padding: 1.2em;
+  border-inline-start: 1px solid var(--border);
+  background: var(--surface);
+}
+
+/* 30rem, not 44rem: the showcase mockups are ~36rem wide, and at the higher
+   threshold they lost the findings rail — the exact thing the copy beside
+   them is describing. Below 30rem the rail genuinely has no room. */
+@container (max-width: 30rem) {
+  .lp-mock-rail { display: none; }
+}
+
+.lp-mock-rail-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-block-end: 1em;
+}
+
+.lp-mock-rail-head span {
+  inline-size: 45%;
+  block-size: 0.85em;
+  border-radius: var(--radius-xs);
+  background: color-mix(in oklch, var(--text) 22%, transparent);
+}
+
+.lp-mock-rail-head em {
+  padding: 0.1em 0.6em;
+  border-radius: var(--radius-full);
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.9em;
+  font-style: normal;
+}
+
+.lp-mock-finding {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  padding: 0.55em 0.6em;
+  border-radius: var(--radius-sm);
+  margin-inline: -0.6em;
+}
+
+.lp-mock-finding[data-state='confirmed'] {
+  background: color-mix(in oklch, var(--success) 10%, transparent);
+}
+
+.lp-mock-finding-bar {
+  inline-size: 2px;
+  align-self: stretch;
+  border-radius: var(--radius-full);
+  background: var(--sev, var(--severity-info));
+}
+
+.lp-mock-finding[data-severity='critical'] { --sev: var(--severity-critical); }
+.lp-mock-finding[data-severity='high']     { --sev: var(--severity-high); }
+.lp-mock-finding[data-severity='medium']   { --sev: var(--severity-medium); }
+.lp-mock-finding[data-severity='low']      { --sev: var(--severity-low); }
+.lp-mock-finding[data-severity='info']     { --sev: var(--severity-info); }
+
+.lp-mock-finding-label {
+  flex: 1;
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+  font-size: 0.95em;
+}
+
+.lp-mock-finding-pct {
+  color: var(--text-subtle);
+  font-size: 0.9em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* -- Dashboard mockup internals --------------------------------------- */
+.lp-mock-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.9em;
+  margin-block-end: 1.4em;
+}
+
+.lp-mock-kpi {
+  position: relative;
+  padding: 1em;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.lp-mock-kpi::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: 2px;
+  background: var(--tone);
+}
+
+.lp-mock-kpi[data-tone='a'] { --tone: var(--category-orthodontic); }
+.lp-mock-kpi[data-tone='b'] { --tone: var(--accent); }
+.lp-mock-kpi[data-tone='c'] { --tone: var(--severity-critical); }
+.lp-mock-kpi[data-tone='d'] { --tone: var(--success); }
+
+.lp-mock-kpi span {
+  display: block;
+  color: var(--text-subtle);
+  font-size: 0.9em;
+}
+
+.lp-mock-kpi strong {
+  display: block;
+  margin-block-start: 0.3em;
+  font-size: 1.9em;
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+  font-variant-numeric: tabular-nums;
+}
+
+.lp-mock-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.45em;
+  block-size: 11em;
+  padding: 1.2em;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.lp-mock-chart i {
+  flex: 1;
+  block-size: var(--h);
+  border-radius: 2px 2px 0 0;
+  background: var(--accent);
+  transform-origin: bottom;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .lp-mock-chart i {
+      animation: lp-bar-grow both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 26%;
+      animation-delay: calc(var(--i) * -1ms);
+    }
+  }
+
+}
+
+@keyframes lp-bar-grow {
+  from { scale: 1 0; }
+  to   { scale: 1 1; }
+}
+
+/* -- Patients mockup internals ---------------------------------------- */
+.lp-mock-table {
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.lp-mock-row {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  padding: 1em 1.2em;
+  border-block-end: 1px solid var(--border);
+}
+
+.lp-mock-row:last-child { border-block-end: none; }
+
+.lp-mock-avatar {
+  display: grid;
+  place-items: center;
+  inline-size: 2.2em;
+  block-size: 2.2em;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+  color: var(--text-muted);
+  font-size: 0.85em;
+  font-weight: var(--weight-semibold);
+}
+
+.lp-mock-line {
+  block-size: 0.8em;
+  inline-size: var(--w);
+  border-radius: var(--radius-xs);
+  background: color-mix(in oklch, var(--text) 20%, transparent);
+}
+
+.lp-mock-line--dim {
+  background: color-mix(in oklch, var(--text) 9%, transparent);
+}
+
+.lp-mock-chip {
+  margin-inline-start: auto;
+  padding: 0.15em 0.7em;
+  border-radius: var(--radius-full);
+  background: color-mix(in oklch, var(--severity-critical) 14%, transparent);
+  color: color-mix(in oklch, var(--severity-critical) var(--tint-ink-amount), var(--tint-ink));
+  font-size: 0.85em;
+  font-weight: var(--weight-semibold);
+}
+
+/* Between 900px and the point where the page margin disappears there is no
+   room to hang outside the frame, so the cards tuck back inside. */
+@media (max-width: 78rem) {
+  .lp-float--timer { inset-inline-start: var(--space-6); }
+  .lp-float--verdict { inset-inline-end: var(--space-6); }
+}
+
+/* Below the point where they would sit on top of the mockup's content,
+   the floating cards are noise. */
+@media (max-width: 900px) {
+  .lp-float { display: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Section furniture
+   ═══════════════════════════════════════════════════════════════════ */
+.lp-head {
+  max-inline-size: 46rem;
+  margin-block-end: clamp(var(--space-10), 5vw, var(--space-16));
+}
+
+.lp-head--center {
+  margin-inline: auto;
+  text-align: center;
+}
+
+.lp-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-block-end: var(--space-4);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.lp-kicker .icon {
+  color: var(--accent);
+}
+
+.lp-head h2 {
+  font-size: clamp(1.875rem, 3.4vw, 3rem);
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.032em;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+
+.lp-head > p {
+  margin-block-start: var(--space-4);
+  font-size: var(--text-lg);
+  line-height: var(--leading-relaxed);
+  color: var(--text-muted);
+  text-wrap: pretty;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Showcase tabs
+   ═══════════════════════════════════════════════════════════════════ */
+.lp-tablist {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-1);
+  margin-block-end: var(--space-8);
+  padding: var(--space-1);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  inline-size: fit-content;
+  margin-inline: auto;
+  box-shadow: var(--shadow-xs);
+}
+
+/*
+ * Below the width where three labels fit on one line the control stacks. The
+ * pill radius has to go with it: a `radius-full` box wrapped over three rows
+ * renders as a tall stadium with the tabs floating inside it, which reads as
+ * a layout accident rather than a segmented control.
+ */
+@media (max-width: 40rem) {
+  .lp-tablist {
+    flex-direction: column;
+    inline-size: 100%;
+    border-radius: var(--radius-lg);
+  }
+
+  .lp-tab {
+    justify-content: center;
+    border-radius: var(--radius-md);
+  }
+}
+
+.lp-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  color: var(--text-muted);
+  font-size: var(--text-base);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+  transition:
+    color var(--duration-fast) var(--ease-out),
+    background-color var(--duration-fast) var(--ease-out);
+}
+
+.lp-tab:hover { color: var(--text); }
+
+.lp-tab[aria-selected='true'] {
+  background: var(--accent);
+  color: var(--text-on-brand);
+  box-shadow: var(--shadow-sm);
+}
+
+.lp-tab[aria-selected='true'] .icon { color: currentcolor; }
+
+.lp-panel {
+  display: grid;
+  gap: clamp(var(--space-6), 4vw, var(--space-12));
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+}
+
+@media (min-width: 62rem) {
+  .lp-panel {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+  }
+
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .lp-panel:not([hidden]) {
+    animation: lp-panel-in var(--duration-slow) var(--ease-out);
+  }
+
+}
+
+@keyframes lp-panel-in {
+  from { opacity: 0; transform: translateY(0.75rem); }
+  to   { opacity: 1; transform: none; }
+}
+
+.lp-panel-copy h3 {
+  font-size: clamp(1.25rem, 1.8vw, 1.75rem);
+  font-weight: var(--weight-semibold);
+  letter-spacing: -0.025em;
+  margin-block-end: var(--space-4);
+  text-wrap: balance;
+}
+
+.lp-panel-copy > p {
+  color: var(--text-muted);
+  font-size: var(--text-md);
+  line-height: var(--leading-relaxed);
+}
+
+.lp-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-block-start: var(--space-6);
+}
+
+.lp-checklist li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  color: var(--text-muted);
+  font-size: var(--text-base);
+}
+
+.lp-checklist .icon {
+  flex-shrink: 0;
+  margin-block-start: 0.15em;
+  padding: 2px;
+  border-radius: var(--radius-full);
+  background: color-mix(in oklch, var(--success) 16%, transparent);
+  color: var(--success);
+  inline-size: 1.15rem;
+  block-size: 1.15rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Bento features
+   ═══════════════════════════════════════════════════════════════════ */
+.lp-bento {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 62rem) {
+  .lp-bento {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  /* The lead cell spans two columns and both rows, so the grid reads as a
+     composition rather than six identical boxes. */
+  .lp-cell--lead {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+
+}
+
+@media (max-width: 40rem) {
+  .lp-bento { grid-template-columns: minmax(0, 1fr); }
+
+}
+
+.lp-cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  overflow: hidden;
+  transition:
+    border-color var(--duration-base) var(--ease-out),
+    transform var(--duration-base) var(--ease-out),
+    box-shadow var(--duration-base) var(--ease-out);
+}
+
+.lp-cell:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+/* A pointer-tracked highlight. `--mx`/`--my` are written by landing.ts;
+   with no JavaScript the radial simply never moves and stays invisible. */
+.lp-cell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    18rem circle at var(--mx, 50%) var(--my, -20%),
+    color-mix(in oklch, var(--accent) 12%, transparent),
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity var(--duration-slow) var(--ease-out);
+  pointer-events: none;
+}
+
+.lp-cell:hover::after { opacity: 1; }
+
+.lp-cell-icon {
+  display: grid;
+  place-items: center;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  margin-block-end: var(--space-5);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--accent-border);
+  background: var(--accent-subtle);
+  color: color-mix(in oklch, var(--accent) var(--tint-ink-amount), var(--tint-ink));
+}
+
+.lp-cell h3 {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  margin-block-end: var(--space-2);
+}
+
+.lp-cell p {
+  color: var(--text-muted);
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+}
+
+.lp-cell--lead h3 {
+  font-size: var(--text-xl);
+  letter-spacing: -0.02em;
+}
+
+.lp-cell--lead p {
+  font-size: var(--text-md);
+  max-inline-size: 40ch;
+}
+
+/* -- Confidence visual inside the lead cell --------------------------- */
+.lp-cell-viz {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-block-start: auto;
+  padding-block-start: var(--space-8);
+}
+
+.lp-viz-row {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr) 2.5rem;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+.lp-viz-row[data-severity='critical'] { --sev: var(--severity-critical); }
+.lp-viz-row[data-severity='high']     { --sev: var(--severity-high); }
+.lp-viz-row[data-severity='info']     { --sev: var(--severity-info); }
+.lp-viz-row[data-severity='low']      { --sev: var(--severity-low); }
+
+.lp-viz-track {
+  block-size: 0.375rem;
+  border-radius: var(--radius-full);
+  background: var(--surface-sunken);
+  overflow: hidden;
+}
+
+.lp-viz-track i {
+  display: block;
+  block-size: 100%;
+  inline-size: var(--p);
+  border-radius: inherit;
+  background: var(--sev);
+  transform-origin: left;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .lp-viz-track i {
+      animation: lp-fill both;
+      animation-timeline: view();
+      animation-range: entry 20% cover 34%;
+    }
+  }
+
+}
+
+@keyframes lp-fill {
+  from { scale: 0 1; }
+  to   { scale: 1 1; }
+}
+
+.lp-viz-row em {
+  text-align: end;
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-subtle);
+}
+
+@media (max-width: 30rem) {
+  .lp-viz-row { grid-template-columns: 6.5rem minmax(0, 1fr) 2.25rem; }
+
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Steps
+   ═══════════════════════════════════════════════════════════════════ */
+.lp-steps {
+  display: grid;
+  gap: var(--space-8);
+  grid-template-columns: repeat(auto-fit, minmax(min(16rem, 100%), 1fr));
+  counter-reset: lp-step;
+}
+
+.lp-step {
+  position: relative;
+  padding-block-start: var(--space-4);
+  border-block-start: 2px solid var(--border);
+}
+
+/* The active segment of the rule, which fills as the step scrolls in.
+   Reads as a progress bar across the three columns. */
+.lp-step::before {
+  content: '';
+  position: absolute;
+  inset-block-start: -2px;
+  inset-inline-start: 0;
+  inline-size: 100%;
+  block-size: 2px;
+  background: linear-gradient(90deg, var(--accent), color-mix(in oklch, var(--accent) 20%, transparent));
+  transform-origin: left;
+  scale: 0 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .lp-step::before {
+      animation: lp-fill both;
+      animation-timeline: view();
+      animation-range: entry 15% cover 32%;
+    }
+  }
+
+}
+
+@supports not (animation-timeline: view()) {
+  .lp-step::before { scale: 1 1; }
+
+}
+
+.lp-step-num {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-wide);
+  color: var(--accent);
+  margin-block-end: var(--space-4);
+}
+
+.lp-step-icon {
+  display: grid;
+  place-items: center;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  margin-block-end: var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  box-shadow: var(--shadow-xs);
+}
+
+.lp-step h3 {
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  margin-block-end: var(--space-2);
+}
+
+.lp-step p {
+  color: var(--text-muted);
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   FAQ
+   ═══════════════════════════════════════════════════════════════════ */
+.lp-faq-layout {
+  display: grid;
+  gap: clamp(var(--space-6), 4vw, var(--space-12));
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+}
+
+@media (min-width: 62rem) {
+  .lp-faq-layout {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  }
+
+  /* The heading is sticky beside a long accordion so the section keeps its
+     label while the visitor reads down it. */
+  .lp-faq-layout .lp-head {
+    position: sticky;
+    inset-block-start: calc(var(--topbar-height) + var(--space-8));
+    margin-block-end: 0;
+  }
+
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Final CTA
+   ═══════════════════════════════════════════════════════════════════ */
+.lp-final {
+  position: relative;
+  isolation: isolate;
+  padding-block: clamp(var(--space-16), 9vw, var(--space-32));
+  border-block-start: 1px solid var(--border);
+  overflow: hidden;
+  text-align: center;
+}
+
+.lp-final-inner {
+  max-inline-size: 48rem;
+}
+
+.lp-final h2 {
+  font-size: clamp(2rem, 4.4vw, 3.25rem);
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.035em;
+  line-height: 1.06;
+  text-wrap: balance;
+}
+
+.lp-final > .container > p {
+  margin-block-start: var(--space-5);
+  font-size: var(--text-lg);
+  color: var(--text-muted);
+  text-wrap: pretty;
+}
+
+.lp-final-note {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-block-start: var(--space-8);
+  font-size: var(--text-sm);
+  color: var(--text-subtle);
+}
+
+.lp-final-note .icon { color: var(--text-subtle); }

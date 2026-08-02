@@ -1,0 +1,153 @@
+{% extends "app/_layout.html" %}
+{% from "partials/icons.html" import icon %}
+{% set page_key = 'study-detail' %}
+
+{% block body_data %} data-study-id="{{ public_id }}"{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="study-heading">
+    <a class="back-link" href="/app/studies">
+      {{ icon('arrow-left', 'icon--sm') }}Все снимки
+    </a>
+    {# Patient first: that is what a clinician is looking for. The filename is
+       supporting detail, and can be long enough to need explicit wrapping. #}
+    <h1 data-study-patient class="skeleton skeleton--title">&nbsp;</h1>
+    <p class="study-submeta">
+      <span class="study-submeta-item">
+        {{ icon('file-text', 'icon--sm icon--muted') }}
+        <span data-study-filename class="study-filename">—</span>
+      </span>
+      <span class="study-submeta-item">
+        {{ icon('clock', 'icon--sm icon--muted') }}
+        <span data-study-created>—</span>
+      </span>
+      <a class="study-submeta-item" href="#" data-study-patient-link hidden>
+        {{ icon('user', 'icon--sm icon--muted') }}
+        <span>Карта пациента</span>
+      </a>
+    </p>
+  </div>
+  <div class="cluster">
+    <button type="button" class="btn btn--sm btn--primary" data-propose-plan disabled>
+      {{ icon('clipboard', 'icon--sm') }}В план лечения
+    </button>
+    <a class="btn btn--sm" href="/api/v1/studies/{{ public_id }}/export.csv" download>
+      {{ icon('download', 'icon--sm') }}Выгрузить CSV
+    </a>
+    <button type="button" class="btn btn--sm btn--danger" data-delete-study>
+      {{ icon('trash', 'icon--sm') }}Удалить
+    </button>
+  </div>
+</div>
+
+<div class="study-layout">
+  <div class="stack">
+    <div class="viewer-frame">
+      <div class="viewer-toolbar">
+        <div class="viewer-tools">
+          <button type="button" class="btn btn--sm btn--icon" data-viewer-action="zoom-out"
+                  aria-label="Уменьшить" title="Уменьшить">{{ icon('zoom-out', 'icon--sm') }}</button>
+          <button type="button" class="btn btn--sm btn--icon" data-viewer-action="zoom-in"
+                  aria-label="Увеличить" title="Увеличить">{{ icon('zoom-in', 'icon--sm') }}</button>
+          <button type="button" class="btn btn--sm" data-viewer-action="reset">
+            {{ icon('maximize', 'icon--sm') }}Сбросить
+          </button>
+        </div>
+        {# `kbd`, not an icon: these are literally keys the reader presses,
+           and the element is already styled to look like one. #}
+        <span class="panel-subtitle viewer-hint">
+          <kbd>⌘</kbd> + колесо — масштаб · двойной клик — приблизить
+        </span>
+      </div>
+      <div data-viewer></div>
+    </div>
+
+    <div class="card">
+      <div class="between" style="margin-block-end: var(--space-3)">
+        <h2 class="panel-title">Одонтограмма</h2>
+        <p class="panel-subtitle">Нажмите на зуб, чтобы отфильтровать находки</p>
+      </div>
+      <div class="odontogram" data-odontogram></div>
+      <p class="panel-subtitle odontogram-note">
+        Номер зуба определяется по положению области на снимке и может быть
+        неточным — исправьте его в списке находок, если он не совпадает.
+      </p>
+    </div>
+
+    <div class="card">
+      <div class="between" style="margin-block-end: var(--space-3)">
+        <h2 class="panel-title">Классы находок</h2>
+        <p class="panel-subtitle">Нажмите, чтобы скрыть класс</p>
+      </div>
+      <div class="legend" data-legend></div>
+    </div>
+  </div>
+
+  <div class="stack">
+    <section class="card">
+      <div class="between" style="margin-block-end: var(--space-4)">
+        <h2 class="panel-title">Находки</h2>
+        <span class="badge" data-study-findings>0</span>
+      </div>
+
+      <div class="field confidence-field">
+        <label class="field-label" for="confidence">
+          <span>Минимальная уверенность</span>
+          <output class="confidence-value" for="confidence" data-confidence-value>0%</output>
+        </label>
+        <input class="range" type="range" id="confidence" min="0" max="95" step="5" value="0"
+               data-confidence-filter>
+      </div>
+
+      <ul class="findings-list" data-findings-list aria-live="polite">
+        {% for _ in range(4) %}
+        <li class="finding-row">
+          <span class="skeleton skeleton--line" style="inline-size: 100%; block-size: 2.5rem"></span>
+        </li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2 class="panel-title" style="margin-block-end: var(--space-3)">Заключение</h2>
+      <p class="report-summary skeleton skeleton--line" data-report-summary>&nbsp;</p>
+      <div data-recommendations></div>
+      <p class="disclaimer" data-report-disclaimer>—</p>
+    </section>
+
+    <section class="card">
+      <h2 class="panel-title" style="margin-block-end: var(--space-3)">Об анализе</h2>
+      <dl class="meta-list">
+        <dt>Требуют внимания</dt>
+        <dd data-study-attention>—</dd>
+        <dt>Модель</dt>
+        <dd data-study-model>—</dd>
+        <dt>Время анализа</dt>
+        <dd data-study-duration>—</dd>
+      </dl>
+    </section>
+  </div>
+</div>
+
+<dialog class="dialog" data-delete-dialog aria-labelledby="delete-title">
+  <div class="dialog-header">
+    <h2 class="dialog-title" id="delete-title">
+      <span class="dialog-icon dialog-icon--danger" aria-hidden="true">{{ icon('trash') }}</span>
+      Удалить снимок?
+    </h2>
+  </div>
+  <div class="dialog-body">
+    <p class="panel-subtitle">
+      Снимок и все находки будут удалены безвозвратно. Запись в журнале доступа
+      сохранится.
+    </p>
+  </div>
+  <div class="dialog-footer">
+    <form method="dialog"><button class="btn" type="submit">Отмена</button></form>
+    <button type="button" class="btn btn--danger-solid" data-confirm-delete>
+      {{ icon('trash', 'icon--sm') }}Удалить
+    </button>
+  </div>
+</dialog>
+{% endblock %}

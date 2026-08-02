@@ -1,0 +1,43 @@
+{% extends "auth/_layout.html" %}
+{% from "partials/icons.html" import icon %}
+
+{% block form %}
+<h1>Вход в систему</h1>
+<p>Введите данные вашего аккаунта.</p>
+
+{# `action` and `method` are real: without JavaScript the browser still posts,
+   and the JSON endpoint returns a readable error rather than nothing. #}
+<form class="auth-form" data-login-form action="/api/v1/auth/login" method="post" novalidate>
+  <div class="field">
+    <label class="field-label" for="email">Email</label>
+    <input class="input" id="email" name="email" type="email"
+           autocomplete="username" inputmode="email"
+           placeholder="doctor@clinic.kz" required
+           aria-describedby="email-error">
+    <p class="field-error" id="email-error" data-error-for="email"></p>
+  </div>
+
+  <div class="field">
+    <label class="field-label" for="password">Пароль</label>
+    <div class="password-field">
+      <input class="input" id="password" name="password" type="password"
+             autocomplete="current-password" required
+             aria-describedby="password-error">
+      {# Both glyphs are rendered; `aria-pressed` picks which one is shown, so
+         the visual and the announced state cannot drift apart. #}
+      <button type="button" class="password-toggle"
+              data-toggle-password="#password"
+              aria-pressed="false" aria-label="Показать пароль">
+        {{ icon('eye', 'password-icon-show') }}{{ icon('eye-off', 'password-icon-hide') }}
+      </button>
+    </div>
+    <p class="field-error" id="password-error" data-error-for="password"></p>
+  </div>
+
+  <button class="btn btn--primary btn--lg btn--block" type="submit">Войти</button>
+</form>
+
+<p class="auth-footer">
+  Нет аккаунта? <a href="/register">Зарегистрировать клинику</a>
+</p>
+{% endblock %}

@@ -1,0 +1,77 @@
+# Local production-shaped stack: the app against real Postgres.
+#
+#   cp .env.example .env && make docker-up
+#
+# For a GPU or CPU-inference deployment, rebuild with INSTALL_ML=1 and set
+# DENTIST_AI__ML__BACKEND=yolo.
+
+name: dentist-ai
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: dentist
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dentist-local-password}
+      POSTGRES_DB: dentist_ai
+      # C collation keeps index behaviour identical across host locales.
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dentist -d dentist_ai"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    # Not published: only the app needs to reach it.
+    expose:
+      - "5432"
+
+  migrate:
+    build:
+      context: .
+      args:
+        INSTALL_ML: ${INSTALL_ML:-0}
+    # Migrations run to completion before the app starts, so a rolling deploy
+    # never serves against a schema it does not expect.
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      DENTIST_AI__DATABASE__URL: postgresql+asyncpg://dentist:${POSTGRES_PASSWORD:-dentist-local-password}@db:5432/dentist_ai
+      DENTIST_AI__SECRET_KEY: ${DENTIST_AI__SECRET_KEY:?set DENTIST_AI__SECRET_KEY in .env}
+      DENTIST_AI__ENVIRONMENT: production
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: "no"
+
+  app:
+    build:
+      context: .
+      args:
+        INSTALL_ML: ${INSTALL_ML:-0}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      DENTIST_AI__DATABASE__URL: postgresql+asyncpg://dentist:${POSTGRES_PASSWORD:-dentist-local-password}@db:5432/dentist_ai
+      DENTIST_AI__SECRET_KEY: ${DENTIST_AI__SECRET_KEY:?set DENTIST_AI__SECRET_KEY in .env}
+      DENTIST_AI__ENVIRONMENT: production
+      DENTIST_AI__LOG_FORMAT: json
+      DENTIST_AI__ML__BACKEND: ${DENTIST_AI__ML__BACKEND:-stub}
+      DENTIST_AI__ML__WEIGHTS_PATH: /app/models/best.pt
+      DENTIST_AI__SECURITY__TRUSTED_HOSTS: '["localhost","127.0.0.1"]'
+    volumes:
+      # Patient images survive container replacement.
+      - study-storage:/app/var/storage
+      # Model weights are supplied by the host, not baked into the image.
+      - ./models:/app/models:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  postgres-data:
+  study-storage:
