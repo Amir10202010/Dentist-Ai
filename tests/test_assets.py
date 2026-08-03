@@ -94,6 +94,14 @@ def test_theme_script_hash_is_derived_from_the_source() -> None:
     assert f"'sha256-{base64.b64encode(digest).decode('ascii')}'" == THEME_INIT_CSP_HASH
 
 
+@pytest.mark.skipif(
+    not templating.MANIFEST_PATH.is_file(),
+    reason=(
+        "needs the real Vite build; dist/ is gitignored, so a backend-only "
+        "checkout has nothing to assert against. CI enforces the same "
+        "invariant against the manifest in the frontend job."
+    ),
+)
 async def test_rendered_pages_link_a_stylesheet(client: AsyncClient) -> None:
     """End-to-end guard: every entry point must ship its styles.
 

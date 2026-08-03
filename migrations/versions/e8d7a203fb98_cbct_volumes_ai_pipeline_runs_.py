@@ -1153,10 +1153,13 @@ def downgrade() -> None:
         batch_op.drop_column("origin")
 
     with op.batch_alter_table("findings", schema=None) as batch_op:
+        # `sa.false()`, not `sa.text("0")`: the literal renders as `0`, which
+        # SQLite accepts for a boolean and Postgres rejects outright. This
+        # restores the default exactly as 548d0094649a set it.
         batch_op.alter_column(
             "tooth_confirmed",
             existing_type=sa.BOOLEAN(),
-            server_default=sa.text("0"),
+            server_default=sa.false(),
             existing_nullable=False,
         )
 

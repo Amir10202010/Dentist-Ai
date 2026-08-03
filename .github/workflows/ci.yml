@@ -102,6 +102,41 @@ jobs:
           sys.exit(1 if failed else 0)
           PY
 
+      - name: Assert every entry ships styles
+        # The backend's equivalent test needs a built dist/, which is
+        # gitignored and so absent in the backend job. The invariant is the
+        # one that already shipped an unstyled site once: an entry whose CSS
+        # arrives only through a transitive import must still resolve to a
+        # stylesheet.
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, sys
+          manifest = json.loads(
+              pathlib.Path("src/dentist_ai/static/dist/.vite/manifest.json").read_text()
+          )
+
+          def stylesheets(key, seen=None):
+              seen = set() if seen is None else seen
+              if key in seen:
+                  return []
+              seen.add(key)
+              found = list(manifest[key].get("css", []))
+              for imported in manifest[key].get("imports", []):
+                  found += stylesheets(imported, seen)
+              return found
+
+          entries = [k for k, v in manifest.items() if v.get("isEntry")]
+          if not entries:
+              sys.exit("manifest declares no entries")
+
+          failed = False
+          for entry in entries:
+              found = stylesheets(entry)
+              print(f"{entry}: {len(found)} stylesheet(s)")
+              failed |= not found
+          sys.exit(1 if failed else 0)
+          PY
+
   postgres:
     name: Postgres integration
     runs-on: ubuntu-latest
