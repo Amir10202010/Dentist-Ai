@@ -11,6 +11,7 @@ import secrets
 from functools import lru_cache
 from pathlib import Path
 from typing import Literal
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from pydantic import BaseModel, Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -24,6 +25,31 @@ _UNIT_SECONDS = {"s": 1, "m": 60, "h": 3600, "d": 86400}
 
 #: Below this a signing key is brute-forceable; refuse to boot in production.
 MIN_SECRET_KEY_LENGTH = 32
+
+
+def _translate_sslmode(url: str) -> str:
+    """Rename libpq's ``sslmode`` to the ``ssl`` that asyncpg accepts.
+
+    SQLAlchemy forwards unrecognised query parameters to the driver verbatim,
+    and ``asyncpg.connect()`` has no ``sslmode`` argument — so a managed
+    provider's ``?sslmode=require`` raises ``TypeError`` on the first
+    connection rather than at boot, with a message that never mentions the
+    URL. The values libpq and asyncpg use are spelled the same, so this is a
+    rename and not a mapping.
+    """
+    scheme, netloc, path, query, fragment = urlsplit(url)
+    params = parse_qsl(query, keep_blank_values=True)
+    if not any(key == "sslmode" for key, _ in params):
+        return url
+
+    # An explicit `ssl` wins; carrying both would hand asyncpg a duplicate.
+    explicit_ssl = any(key == "ssl" for key, _ in params)
+    translated = [
+        ("ssl", value) if key == "sslmode" else (key, value)
+        for key, value in params
+        if not (key == "sslmode" and explicit_ssl)
+    ]
+    return urlunsplit((scheme, netloc, path, urlencode(translated), fragment))
 
 
 class RateLimitRule(BaseModel):
@@ -52,6 +78,22 @@ class DatabaseSettings(BaseModel):
     @field_validator("url")
     @classmethod
     def _require_async_driver(cls, value: str) -> str:
+        """Accept the URL a managed Postgres hands out, not just ours.
+
+        Render, Railway, Heroku and Fly all inject a synchronous
+        ``postgres://`` URL and offer no way to change its shape, so rejecting
+        it would mean asking the operator to hand-rewrite a value the platform
+        generates — and to redo it every rotation. The scheme is rewritten
+        instead; the engine is async either way.
+        """
+        for prefix in ("postgres://", "postgresql://"):
+            if value.startswith(prefix):
+                value = f"postgresql+asyncpg://{value[len(prefix) :]}"
+                break
+
+        if value.startswith("postgresql+asyncpg://"):
+            value = _translate_sslmode(value)
+
         if not value.startswith(("postgresql+asyncpg://", "sqlite+aiosqlite://")):
             msg = (
                 "DATABASE__URL must use an async driver: "
