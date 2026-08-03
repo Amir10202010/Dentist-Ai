@@ -267,9 +267,7 @@ async def test_a_note_appears_on_the_timeline_and_leaves_when_deleted(
 
 async def test_an_empty_note_is_refused(clinic: AsyncClient) -> None:
     patient_id = await create_patient(clinic)
-    response = await clinic.post(
-        f"{API_PREFIX}/timeline/{patient_id}/notes", json={"body": "   "}
-    )
+    response = await clinic.post(f"{API_PREFIX}/timeline/{patient_id}/notes", json={"body": "   "})
     assert response.status_code == 422
 
 
@@ -380,9 +378,7 @@ async def test_a_timeline_is_invisible_across_clinics(
     # 404, not 403: confirming existence would itself leak information.
     assert (await beta.get(f"{API_PREFIX}/timeline/{patient_id}")).status_code == 404
     assert (
-        await beta.post(
-            f"{API_PREFIX}/timeline/{patient_id}/notes", json={"body": "Взлом"}
-        )
+        await beta.post(f"{API_PREFIX}/timeline/{patient_id}/notes", json={"body": "Взлом"})
     ).status_code == 404
     assert (
         await beta.delete(f"{API_PREFIX}/timeline/{patient_id}/notes/{note['id']}")
@@ -393,9 +389,7 @@ async def test_a_timeline_is_invisible_across_clinics(
             json={"status": "cancelled"},
         )
     ).status_code == 404
-    assert (
-        await beta.get(f"{API_PREFIX}/timeline/{patient_id}/appointments")
-    ).status_code == 404
+    assert (await beta.get(f"{API_PREFIX}/timeline/{patient_id}/appointments")).status_code == 404
 
 
 async def test_the_timeline_requires_authentication(client: AsyncClient) -> None:

@@ -87,9 +87,7 @@ async def get_thread(
     return _present(thread, messages)
 
 
-def _present(
-    thread: AssistantThread, messages: list[AssistantMessage]
-) -> AssistantThreadResponse:
+def _present(thread: AssistantThread, messages: list[AssistantMessage]) -> AssistantThreadResponse:
     return AssistantThreadResponse(
         public_id=thread.public_id,
         title=thread.title,

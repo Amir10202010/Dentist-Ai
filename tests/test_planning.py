@@ -58,9 +58,7 @@ def test_a_sound_root_filling_does_not_propose_retreatment() -> None:
 def test_a_lesion_produces_the_endodontic_pathway() -> None:
     plan = propose([finding("apical_lesion", tooth=46)])
     assert plan is not None
-    standard = next(
-        item for item in plan.options if item.approach is TreatmentApproach.STANDARD
-    )
+    standard = next(item for item in plan.options if item.approach is TreatmentApproach.STANDARD)
     assert "root_canal" in standard.procedure_codes
 
 
@@ -79,8 +77,7 @@ def test_options_are_ordered_by_scope_and_never_duplicated() -> None:
     assert visits == sorted(visits), "a wider scope cannot mean fewer appointments"
 
     signatures = {
-        tuple((step.code, step.tooth_number) for step in item.steps)
-        for item in plan.options
+        tuple((step.code, step.tooth_number) for step in item.steps) for item in plan.options
     }
     assert len(signatures) == len(plan.options), "identical options must be collapsed"
 
@@ -230,9 +227,7 @@ async def test_accepting_an_option_creates_its_steps_with_tooth_numbers(
     assert accepted["items"], "accepting must create the option's steps"
     assert [item for item in accepted["options"] if item["isSelected"]]
 
-    root_canals = [
-        item for item in accepted["items"] if item["procedureCode"] == "root_canal"
-    ]
+    root_canals = [item for item in accepted["items"] if item["procedureCode"] == "root_canal"]
     if len(root_canals) > 1:
         teeth = {item["toothNumber"] for item in root_canals}
         assert len(teeth) == len(root_canals), "each tooth is its own appointment"

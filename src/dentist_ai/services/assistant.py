@@ -111,9 +111,7 @@ class CaseContext:
             return []
         # A rejected finding is a clinician saying the model was wrong, so the
         # assistant must not keep explaining it back to them.
-        return [
-            item for item in self.volume.findings if item.review is not FindingReview.REJECTED
-        ]
+        return [item for item in self.volume.findings if item.review is not FindingReview.REJECTED]
 
 
 # ---------------------------------------------------------------------------
@@ -128,7 +126,6 @@ _INTENTS: Final[tuple[tuple[Intent, tuple[str, ...]], ...]] = (
         Intent.WHY_DETECTED,
         ("почему", "на основании чего", "как определ", "why", "how did"),
     ),
-
     (
         Intent.TREATMENTS,
         ("лечен", "что делать", "варианты", "план", "treat", "options"),
@@ -471,9 +468,7 @@ def _handle_summarise(question: str, case: CaseContext, locale: str) -> Answer:
         return _no_scan(Intent.SUMMARISE)
 
     findings = _ranked(case)
-    attention = [
-        item for item in findings if cbct_taxonomy.by_key(item.class_key).needs_attention
-    ]
+    attention = [item for item in findings if cbct_taxonomy.by_key(item.class_key).needs_attention]
     lines = [
         f"Исследование {case.volume.original_filename}, "
         f"поле зрения — {field_of_view_label(case.volume.field_of_view, locale).lower()}. "
@@ -505,9 +500,7 @@ def _handle_summarise(question: str, case: CaseContext, locale: str) -> Answer:
     return Answer(
         intent=Intent.SUMMARISE,
         body="\n".join(lines),
-        citations=(
-            Citation("volume", case.volume.original_filename, _volume_href(case)),
-        ),
+        citations=(Citation("volume", case.volume.original_filename, _volume_href(case)),),
         suggestions=("Почему AI это нашёл?", "Какие возможны варианты лечения?"),
     )
 
@@ -937,9 +930,7 @@ def _region(finding: VolumeFinding) -> cbct_taxonomy.Region:
         return cbct_taxonomy.Region.FULL_VOLUME
 
 
-def _target_finding(
-    question: str, case: CaseContext, locale: str
-) -> VolumeFinding | None:
+def _target_finding(question: str, case: CaseContext, locale: str) -> VolumeFinding | None:
     """Which finding a question is about, by matching its label or tooth number.
 
     Falls back to the most severe finding only for questions that make sense

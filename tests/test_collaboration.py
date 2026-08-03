@@ -71,9 +71,7 @@ async def notifications_for(app: FastAPI, user_id: int) -> list[Notification]:
     factory: async_sessionmaker[AsyncSession] = app.state.session_factory
     async with factory() as session:
         rows = await session.scalars(
-            select(Notification)
-            .where(Notification.user_id == user_id)
-            .order_by(Notification.id)
+            select(Notification).where(Notification.user_id == user_id).order_by(Notification.id)
         )
         return list(rows.all())
 
@@ -175,9 +173,7 @@ async def test_answering_a_reply_joins_the_root_instead_of_nesting_deeper(
 ) -> None:
     patient_id = await create_patient(clinic)
     root = await post_comment(clinic, resource_id=patient_id, body="Корень.")
-    reply = await post_comment(
-        clinic, resource_id=patient_id, body="Ответ.", parent_id=root["id"]
-    )
+    reply = await post_comment(clinic, resource_id=patient_id, body="Ответ.", parent_id=root["id"])
 
     nested = await post_comment(
         clinic, resource_id=patient_id, body="Ответ на ответ.", parent_id=reply["id"]
@@ -377,9 +373,7 @@ async def test_only_the_assignee_may_accept_and_complete(
     refused = await clinic.patch(f"{ASSIGNMENTS}/{assignment_id}", json={"status": "accepted"})
     assert refused.status_code == 403
 
-    accepted = await colleague.patch(
-        f"{ASSIGNMENTS}/{assignment_id}", json={"status": "accepted"}
-    )
+    accepted = await colleague.patch(f"{ASSIGNMENTS}/{assignment_id}", json={"status": "accepted"})
     assert accepted.status_code == 200
     assert accepted.json()["completedAt"] is None
 
@@ -510,7 +504,5 @@ async def test_collaboration_is_invisible_across_clinics(
 
 async def test_collaboration_requires_authentication(client: AsyncClient) -> None:
     mount(app_of(client))
-    response = await client.get(
-        COMMENTS, params={"resourceType": "patient", "resourceId": "1"}
-    )
+    response = await client.get(COMMENTS, params={"resourceType": "patient", "resourceId": "1"})
     assert response.status_code == 401

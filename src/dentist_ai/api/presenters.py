@@ -298,9 +298,7 @@ def present_treatment_option(
         benefits=option.benefits,
         risks=option.risks,
         procedure_codes=[
-            chunk.partition(":")[0]
-            for chunk in option.procedure_codes.split(",")
-            if chunk
+            chunk.partition(":")[0] for chunk in option.procedure_codes.split(",") if chunk
         ],
         is_selected=option.is_selected,
     )

@@ -193,6 +193,8 @@ type PatientDep = Annotated[PatientService, Depends(get_patient_service)]
 type StudyDep = Annotated[StudyService, Depends(get_study_service)]
 type ScanDep = Annotated[ScanService, Depends(get_scan_service)]
 type TreatmentDep = Annotated[TreatmentService, Depends(get_treatment_service)]
+
+
 def get_planning_service(session: DbSession, audit: AuditDep) -> PlanningService:
     return PlanningService(session, audit)
 

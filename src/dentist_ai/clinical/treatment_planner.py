@@ -147,9 +147,7 @@ class TreatmentOption:
         are two appointments and two line items on an estimate, and a plan that
         collapses them into one is wrong about both the cost and the schedule.
         """
-        return ",".join(
-            f"{step.code}:{step.tooth_number or ''}" for step in self.steps
-        )
+        return ",".join(f"{step.code}:{step.tooth_number or ''}" for step in self.steps)
 
 
 @dataclass(frozen=True, slots=True)
@@ -293,8 +291,7 @@ _APPROACH_RISKS: Final[dict[TreatmentApproach, dict[Locale, str]]] = {
             "потребовать большего объёма лечения позже."
         ),
         "en": (
-            "Findings left under observation may progress and need more "
-            "extensive treatment later."
+            "Findings left under observation may progress and need more extensive treatment later."
         ),
         "kk": "Бақылауда қалған табылымдар үдеп, кейін көбірек емдеуді талап етуі мүмкін.",
     },
@@ -498,9 +495,7 @@ def propose(
     )
 
 
-def _distinct_options(
-    steps: Sequence[PlannedStep], locale: Locale
-) -> tuple[TreatmentOption, ...]:
+def _distinct_options(steps: Sequence[PlannedStep], locale: Locale) -> tuple[TreatmentOption, ...]:
     """Build the three approaches, dropping any that duplicate a narrower one.
 
     When a case has nothing elective in it, the comprehensive option contains
@@ -696,9 +691,7 @@ def _rationale(
     shows can be checked against it.
     """
     attention = sum(
-        1
-        for finding in findings
-        if finding.severity in (Severity.CRITICAL, Severity.HIGH)
+        1 for finding in findings if finding.severity in (Severity.CRITICAL, Severity.HIGH)
     )
     sources = {finding.source for finding in findings}
     basis = {
@@ -741,11 +734,7 @@ def _unaddressed(findings: Sequence[PlannedFinding], locale: Locale) -> tuple[st
     is what stops a short plan beside a long finding list reading as a bug.
     """
     silent = sorted(
-        {
-            finding.label(locale)
-            for finding in findings
-            if not finding.procedure_codes()
-        }
+        {finding.label(locale) for finding in findings if not finding.procedure_codes()}
     )
     return tuple(silent)
 

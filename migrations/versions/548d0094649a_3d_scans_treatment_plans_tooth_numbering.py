@@ -84,9 +84,7 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.CheckConstraint("byte_size > 0", name=op.f("ck_scans_3d_scan_positive_size")),
-        sa.CheckConstraint(
-            "triangle_count > 0", name=op.f("ck_scans_3d_scan_positive_triangles")
-        ),
+        sa.CheckConstraint("triangle_count > 0", name=op.f("ck_scans_3d_scan_positive_triangles")),
         sa.ForeignKeyConstraint(
             ["organization_id"],
             ["organizations.id"],

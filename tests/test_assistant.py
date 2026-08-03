@@ -48,7 +48,7 @@ def test_a_patient_facing_request_beats_the_generic_explain() -> None:
 
 
 def test_matching_is_on_word_boundaries_not_substrings() -> None:
-    """"имплант" contains "план".
+    """ "имплант" contains "план".
 
     A plain substring test routes a cost question to the treatment handler,
     which is the kind of wrong answer that is invisible in review and obvious
@@ -71,9 +71,7 @@ def test_an_unrecognised_question_admits_it() -> None:
         ("", "Пациент"),
     ],
 )
-def test_patients_are_addressed_by_given_name_not_surname(
-    full_name: str, expected: str
-) -> None:
+def test_patients_are_addressed_by_given_name_not_surname(full_name: str, expected: str) -> None:
     """Records are surname-first, so the obvious first token is the surname."""
     assert _address(full_name) == expected
 
@@ -113,7 +111,7 @@ async def test_a_summary_reports_the_counts_that_are_actually_stored(
 async def test_why_answers_with_the_stored_rationale_and_the_stage(
     authed_client: AsyncClient,
 ) -> None:
-    """"Why" has to be answerable, or the finding is not reviewable."""
+    """ "Why" has to be answerable, or the finding is not reviewable."""
     volume = await setup_case(authed_client)
     result = await ask(authed_client, "Почему AI это нашёл?", volumePublicId=volume["publicId"])
 
@@ -166,17 +164,13 @@ async def test_a_rejected_finding_stops_being_explained_back(
         json={"review": "rejected"},
     )
 
-    result = await ask(
-        authed_client, "Кратко опиши этот снимок", volumePublicId=volume["publicId"]
-    )
+    result = await ask(authed_client, "Кратко опиши этот снимок", volumePublicId=volume["publicId"])
     assert str(volume["findingCount"]) not in result["answer"]["body"].split("\n")[0]
 
 
 async def test_a_conversation_keeps_its_turns(authed_client: AsyncClient) -> None:
     volume = await setup_case(authed_client)
-    first = await ask(
-        authed_client, "Кратко опиши этот снимок", volumePublicId=volume["publicId"]
-    )
+    first = await ask(authed_client, "Кратко опиши этот снимок", volumePublicId=volume["publicId"])
     thread_id = first["threadPublicId"]
 
     await ask(authed_client, "Почему AI это нашёл?", threadPublicId=thread_id)
@@ -197,9 +191,7 @@ async def test_an_answer_without_a_scan_says_so_rather_than_guessing(
     authed_client: AsyncClient,
 ) -> None:
     patient = await authed_client.post("/api/v1/patients", json={"fullName": "Без снимков"})
-    result = await ask(
-        authed_client, "Кратко опиши этот снимок", patientId=patient.json()["id"]
-    )
+    result = await ask(authed_client, "Кратко опиши этот снимок", patientId=patient.json()["id"])
     assert "не привязано" in result["answer"]["body"]
 
 

@@ -1,9 +1,0 @@
-# Web app (app/main.py)
-flask
-werkzeug
-python-dotenv
-psycopg2-binary
-
-# Detection (app/predict.py) — ultralytics pulls in torch
-ultralytics
-opencv-python

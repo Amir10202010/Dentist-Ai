@@ -322,9 +322,7 @@ class LesionDetectionStage:
                 mean_radius = float(radius_by_angle[start:end].mean())
                 if mean_radius <= 0:
                     continue
-                arc_mm = (
-                    (end - start) / _ARCH_BINS * np.pi * mean_radius * grid.spacing[0]
-                )
+                arc_mm = (end - start) / _ARCH_BINS * np.pi * mean_radius * grid.spacing[0]
                 if arc_mm < _MIN_EDENTULOUS_MM:
                     continue
 

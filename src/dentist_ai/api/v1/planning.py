@@ -56,7 +56,5 @@ async def accept(
     planning: PlanningDep,
     context: RequestCtx,
 ) -> PlanResponse:
-    plan = await planning.accept_option(
-        public_id, payload.approach, actor=user, context=context
-    )
+    plan = await planning.accept_option(public_id, payload.approach, actor=user, context=context)
     return present_plan(plan, user.locale)
