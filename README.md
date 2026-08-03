@@ -1,10 +1,11 @@
 # Dentist-AI
 
-Decision support for dental clinics: a detector reads a panoramic radiograph,
-the product turns its output into a per-tooth record, a report and a draft
-treatment plan, and a clinician signs off on all of it.
+Decision support for dental clinics. A detector reads a panoramic radiograph
+and a staged pipeline reads a CBCT volume; the product turns both into a
+per-tooth record, a report and a draft treatment plan, and a clinician signs
+off on all of it.
 
-[Quick start](#quick-start) · [Architecture](docs/ARCHITECTURE.md) · [Security](docs/SECURITY.md)
+[Quick start](#quick-start) · [Architecture](docs/ARCHITECTURE.md) · [Deployment](docs/DEPLOY.md) · [Security](docs/SECURITY.md)
 
 ## What it does
 
@@ -20,9 +21,24 @@ treatment plan, and a clinician signs off on all of it.
   editable, and the clinician's correction is what gets stored.
 - **A report.** Per-tooth groups, regional findings and the procedures those
   findings map to in the protocol table.
-- **A treatment plan.** A draft is assembled from confirmed findings, then
-  edited: steps carry a priority, a status, a tooth and an estimate in visits
-  and minutes.
+- **A treatment plan.** Confirmed findings across radiographs and CBCT are
+  turned into options of differing scope, each with its own sequence, visit
+  count, chair time, duration and complexity, and with risks derived from the
+  combination of findings and procedures rather than listed per finding.
+  Nothing is scheduled until a clinician accepts an option; steps then carry a
+  priority, a status, a tooth and an estimate in visits and minutes.
+- **CBCT, read in depth.** A DICOM series or a NIfTI volume is decoded to a
+  canonical container and put through five stages — quality, segmentation,
+  detection, classification, synthesis — producing findings across 20 classes,
+  each with a confidence, an affected region, a measurement in millimetres,
+  the reason it was called, and what to do next.
+- **A viewer that measures.** Three synchronised planes with a shared
+  crosshair, plus a volumetric 3D render; distances and angles in millimetres,
+  point density in HU, annotations, window presets, per-axis clipping, and
+  findings drawn over both the slices and the volume.
+- **A case assistant.** Answers questions about one case from stored rows
+  only — why a finding was called, what the options are, what to check at the
+  appointment — and cites the records each answer was built from.
 - **3D scans.** Intraoral scans, plaster-model scans and CBCT-derived surfaces
   in STL, PLY or OBJ, viewed in the browser with orbit, zoom and a cross
   section.
@@ -101,10 +117,16 @@ src/dentist_ai/
 ├── core/        config, security, logging, errors, rate limiting, ids
 ├── db/          SQLAlchemy models and session management
 ├── ml/          detector protocol, YOLO backend, stub backend, taxonomy
-├── clinical/    FDI charting, treatment protocols, report assembly, labels
+│   ├── stages/  quality · segmentation · detection · classification · synthesis
+│   ├── pipeline.py   stage protocol, registry, per-stage failure isolation
+│   ├── volumetrics.py NumPy image analysis — thresholding, components, metrics
+│   └── cbct_taxonomy.py the 20 volume finding classes and what each implies
+├── clinical/    FDI charting, treatment protocols, report assembly, labels,
+│                treatment planner
 ├── schemas/     Pydantic request/response contracts
 ├── services/    business logic — auth, patients, studies, scans, meshes,
-│                treatment, storage, audit
+│                volumes, planning, assistant, search, library, collaboration,
+│                timeline, notifications, analytics, treatment, storage, audit
 ├── api/         HTTP layer — routers, dependencies, middleware, presenters
 ├── web/         server-rendered pages and Vite asset resolution
 ├── templates/   Jinja2
@@ -112,8 +134,9 @@ src/dentist_ai/
 
 frontend/src/
 ├── styles/      design tokens, base, components, per-area styles
-├── lib/         typed API client, DOM helpers, forms, toasts, theme
-├── features/    one module per screen, loaded on demand
+├── lib/         typed API client, DOM helpers, forms, toasts, theme, DVOL
+├── features/    one module per screen, loaded on demand — including the
+│                volume viewer: MPR, WebGL2 renderer, shared store
 └── entries/     marketing · auth · app
 ```
 
@@ -132,15 +155,22 @@ Full rationale, including trade-offs and known scaling limits, is in
 |---|---|
 | Backend | FastAPI, SQLAlchemy 2.0 (async), Alembic, Pydantic v2 |
 | Database | PostgreSQL in production, SQLite for local development |
-| Inference | Ultralytics YOLO behind a swappable protocol |
-| 3D | STL/PLY/OBJ parsed with NumPy, rendered with hand-written WebGL |
+| Inference | Ultralytics YOLO behind a swappable protocol; the CBCT pipeline is NumPy only |
+| Imaging | DICOM Part 10 and NIfTI-1 decoded without an imaging dependency |
+| 3D | Volume ray marching on WebGL2 3D textures; STL/PLY/OBJ meshes parsed with NumPy |
 | Frontend | Vite, TypeScript (strict), hand-written CSS with design tokens |
 | Quality | ruff, mypy (strict), pytest, GitHub Actions |
 
 No frontend framework and no 3D library. The product is server-rendered pages
 plus small per-screen TypeScript modules; the mesh viewer is one WebGL program
-over one buffer, which is the whole requirement for opaque triangles under a
-fixed light.
+over one buffer, and the volume renderer is a second one that marches rays
+through a single 3D texture. Reslicing for the 2D planes is done on the CPU,
+because a plane is a memory-access pattern rather than a shading problem.
+
+The CBCT pipeline carries no learned weights. Findings come from thresholding,
+connected components and geometric rules over the volume, so every call can be
+explained in terms a clinician can check — which is also why each one ships
+with its rationale rather than a score alone.
 
 ## Configuration
 
@@ -174,6 +204,19 @@ uploads, EXIF stripping, decompression-bomb limits, mesh decoding across all
 five supported encodings, FDI numbering geometry, protocol-table integrity,
 and that every page actually links a stylesheet.
 
+The CBCT half is tested against generated phantoms rather than patient data.
+[`scripts/synthetic_cbct.py`](scripts/synthetic_cbct.py) builds anatomically
+arranged volumes for seven presets — healthy, periapical, cyst, implant site,
+restored, periodontal, poor quality — and the suite asserts both that findings
+appear where the phantom put them and, on the healthy preset, that anatomy is
+not reported as pathology. That second direction is the one that matters: a
+classifier which flags a normal mandibular canal as a lesion is worse than one
+that misses it.
+
+CI additionally runs the migrations against a real PostgreSQL — upgrade,
+downgrade to base, upgrade again — because SQLite accepts schema mistakes that
+Postgres rejects.
+
 ## Deployment
 
 ```bash
@@ -184,6 +227,13 @@ The image runs as an unprivileged user, migrations run to completion before
 the app starts, and patient storage is a mounted volume. Behind a reverse
 proxy, terminate TLS there and keep `DENTIST_AI__ENVIRONMENT=production` so
 cookies are `Secure` and HSTS is sent.
+
+[`render.yaml`](render.yaml) is a ready Blueprint — Docker service, managed
+Postgres, a disk for patient volumes, a generated signing key — but nothing is
+Render-specific beyond that file. Serverless hosts are not an option: volumes
+live on disk, analysis outruns a function timeout, and pages are rendered by
+the process that serves the JSON. [docs/DEPLOY.md](docs/DEPLOY.md) covers the
+reasoning, the required environment variables, and other container hosts.
 
 ## Scope
 
