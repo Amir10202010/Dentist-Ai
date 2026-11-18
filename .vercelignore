@@ -1,0 +1,8 @@
+.venv
+.git
+frontend/node_modules
+tests
+training
+docs
+var
+.claude
